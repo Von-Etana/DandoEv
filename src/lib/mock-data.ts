@@ -62,7 +62,7 @@ export const mockBikes: Bike[] = [
     {
         id: 'bike-003',
         name: 'ThunderBolt Sport X',
-        brand: 'VoltRide',
+        brand: 'DandoEv',
         model: 'TB-SX',
         description: 'For the thrill-seekers. The ThunderBolt Sport X combines raw power with sporty aesthetics. Its 5000W motor delivers exhilarating acceleration while maintaining impressive range. Race-inspired design with premium components.',
         price: 1250000,
@@ -89,7 +89,7 @@ export const mockBikes: Bike[] = [
     {
         id: 'bike-004',
         name: 'CargoMax E-600',
-        brand: 'VoltRide',
+        brand: 'DandoEv',
         model: 'CM-600',
         description: 'Built for business. The CargoMax E-600 is a heavy-duty electric cargo bike designed for logistics and delivery operations. With a massive cargo capacity and rugged build, it is the perfect solution for last-mile delivery in Nigeria.',
         price: 680000,
@@ -116,7 +116,7 @@ export const mockBikes: Bike[] = [
     {
         id: 'bike-005',
         name: 'SwiftFold Compact',
-        brand: 'VoltRide',
+        brand: 'DandoEv',
         model: 'SF-C',
         description: 'The ultimate urban companion. The SwiftFold Compact folds in seconds for easy storage and transport. Perfect for apartment dwellers and those who combine e-bike rides with public transit.',
         price: 380000,
@@ -143,7 +143,7 @@ export const mockBikes: Bike[] = [
     {
         id: 'bike-006',
         name: 'TrailBlazer Off-Road',
-        brand: 'VoltRide',
+        brand: 'DandoEv',
         model: 'TB-OR',
         description: 'Conquer any terrain. The TrailBlazer Off-Road features knobby tyres, full suspension, and a powerful motor for adventurous riders who want to explore beyond paved roads.',
         price: 980000,
@@ -252,7 +252,7 @@ export const mockUsers: User[] = [
     },
     {
         id: 'admin-001',
-        email: 'admin@voltride.ng',
+        email: 'admin@dandoev.ng',
         phone: '08000000001',
         firstName: 'System',
         lastName: 'Admin',

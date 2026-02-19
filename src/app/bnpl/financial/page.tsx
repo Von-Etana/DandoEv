@@ -68,7 +68,7 @@ export default function FinancialInfoPage() {
                 <div className="card card-elevated" style={{ padding: 'var(--space-6)', borderRadius: 'var(--radius-2xl)', marginBottom: '1rem' }}>
                     <h3 style={{ fontWeight: 700, marginBottom: '0.75rem' }}>Direct Debit Mandate</h3>
                     <p style={{ fontSize: 'var(--text-sm)', color: 'var(--gray-600)', lineHeight: 1.6, marginBottom: '1rem' }}>
-                        By setting up a direct debit mandate, you authorize VoltRide to debit your account for monthly repayments.
+                        By setting up a direct debit mandate, you authorize DandoEv to debit your account for monthly repayments.
                         This ensures timely payments and protects your credit score.
                     </p>
                     <div style={{ background: 'var(--info-bg)', padding: '1rem', borderRadius: 'var(--radius-xl)', marginBottom: '1rem' }}>
@@ -85,7 +85,7 @@ export default function FinancialInfoPage() {
                             onChange={e => u('mandateAccepted', e.target.checked)}
                             style={{ marginTop: '0.25rem', width: '18px', height: '18px', accentColor: 'var(--primary)' }} />
                         <span style={{ fontSize: 'var(--text-sm)', color: 'var(--gray-700)', lineHeight: 1.6 }}>
-                            I authorize VoltRide to set up a direct debit mandate on my bank account for the purpose of monthly BNPL repayments.
+                            I authorize DandoEv to set up a direct debit mandate on my bank account for the purpose of monthly BNPL repayments.
                         </span>
                     </label>
                 </div>

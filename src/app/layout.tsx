@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "VoltRide - Ride Electric, Pay Smart | E-Bike BNPL Nigeria",
+  title: "DandoEv - Ride Electric, Pay Smart | E-Bike BNPL Nigeria",
   description: "Nigeria's premier electric bike marketplace with flexible Buy Now, Pay Later options. Browse, finance, and ride electric bikes with ease.",
-  keywords: "electric bikes, e-bikes, BNPL, buy now pay later, Nigeria, VoltRide",
+  keywords: "electric bikes, e-bikes, BNPL, buy now pay later, Nigeria, DandoEv",
 };
 
 import MobileNav from "@/components/layout/MobileNav";

@@ -136,9 +136,9 @@ export default function LoanTermsPage() {
                     }}>
                         <p>1. I agree to repay the loan amount plus interest and service fees as outlined above.</p>
                         <p>2. I understand that failure to make timely payments may result in additional fees and/or legal action.</p>
-                        <p>3. I authorize VoltRide to obtain my credit information and perform verification checks.</p>
+                        <p>3. I authorize DandoEv to obtain my credit information and perform verification checks.</p>
                         <p>4. I agree that the financed bike remains collateral until the loan is fully repaid.</p>
-                        <p>5. I acknowledge that VoltRide may enable GPS tracking and/or immobilizer features on financed bikes.</p>
+                        <p>5. I acknowledge that DandoEv may enable GPS tracking and/or immobilizer features on financed bikes.</p>
                         <p>6. Early repayment is allowed with no additional penalties.</p>
                         <p>7. My guarantor will be contacted in the event of default.</p>
                     </div>
