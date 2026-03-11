@@ -1,0 +1,326 @@
+/* ==========================================================================
+   LOGITIC DESIGN TOKENS (CSS Custom Properties)
+   References: Outfit & Plus Jakarta Sans typography 
+   ========================================================================== */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap');
+
+.logistics-wrapper {
+    --color-primary-navy: #0A192F;
+    /* Authority, Stability */
+    --color-accent-orange: #F97316;
+    /* Urgency, Action, Call-To-Action */
+    --color-accent-hover: #EA580C;
+    --color-surface-white: #FFFFFF;
+    --color-surface-alt: #F1F5F9;
+    /* Off-white for section delineation */
+    --color-text-primary: #334155;
+    /* Charcoal for reading ergonomics */
+    --color-text-secondary: #64748B;
+    --color-border-subtle: #E2E8F0;
+
+    /* Typographic Ecosystem */
+    --font-family-display: 'Outfit', system-ui, sans-serif;
+    --font-family-body: 'Plus Jakarta Sans', system-ui, sans-serif;
+
+    /* Modular Typographic Scale (1.25 Ratio) */
+    --text-size-xs: 0.8rem;
+    --text-size-sm: 0.889rem;
+    --text-size-base: 1rem;
+    /* 16px baseline */
+    --text-size-h6: 1.25rem;
+    --text-size-h4: 1.563rem;
+    /* Feature card headers */
+    --text-size-h3: 1.953rem;
+    /* Section titles */
+    --text-size-h2: 2.441rem;
+    --text-size-h1: 3.052rem;
+    /* Hero statements & Team Names */
+
+    /* Spatial Grid System */
+    --spacing-xs: 0.5rem;
+    --spacing-sm: 1rem;
+    --spacing-md: 2rem;
+    --spacing-lg: 4rem;
+    --spacing-xl: 6rem;
+
+    /* Interaction Parameters */
+    --transition-bezier: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --shadow-elevation-1: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-elevation-2: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+    font-family: var(--font-family-body);
+    color: var(--color-text-primary);
+    background-color: var(--color-surface-white);
+    line-height: 1.6;
+}
+
+.logistics-wrapper h1,
+.logistics-wrapper h2,
+.logistics-wrapper h3,
+.logistics-wrapper h4,
+.logistics-wrapper h5,
+.logistics-wrapper h6 {
+    font-family: var(--font-family-display);
+    color: var(--color-primary-navy);
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: var(--spacing-sm);
+}
+
+.logistics-wrapper h1 {
+    font-size: var(--text-size-h1);
+}
+
+.logistics-wrapper h2 {
+    font-size: var(--text-size-h2);
+}
+
+.logistics-wrapper h3 {
+    font-size: var(--text-size-h3);
+}
+
+.logistics-wrapper h4 {
+    font-size: var(--text-size-h4);
+}
+
+.logistics-wrapper .container {
+    width: 100%;
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-sm);
+}
+
+.logistics-wrapper .layout-flex-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logistics-wrapper .btn-primary,
+.logistics-wrapper .btn-secondary,
+.logistics-wrapper .readon-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-family-display);
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    transition: var(--transition-bezier);
+}
+
+.logistics-wrapper .btn-primary {
+    padding: 1rem 2rem;
+    background-color: var(--color-accent-orange);
+    color: var(--color-surface-white);
+}
+
+.logistics-wrapper .btn-primary:hover {
+    background-color: var(--color-accent-hover);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-elevation-1);
+}
+
+.logistics-wrapper .btn-secondary {
+    padding: 1rem 2rem;
+    background-color: transparent;
+    color: var(--color-primary-navy);
+    border: 2px solid var(--color-primary-navy);
+}
+
+.logistics-wrapper .btn-secondary:hover {
+    background-color: var(--color-primary-navy);
+    color: var(--color-surface-white);
+}
+
+.logistics-wrapper .header-top-bar {
+    background-color: var(--color-primary-navy);
+    color: var(--color-surface-white);
+    font-size: var(--text-size-xs);
+    padding: var(--spacing-xs) 0;
+}
+
+.logistics-wrapper .contact-node {
+    margin-right: 1.5rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.logistics-wrapper .header-main-nav {
+    background-color: var(--color-surface-white);
+    box-shadow: var(--shadow-elevation-1);
+    padding: var(--spacing-sm) 0;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.logistics-wrapper .nav-list {
+    list-style: none;
+    display: flex;
+    gap: 2rem;
+}
+
+.logistics-wrapper .nav-item a {
+    text-decoration: none;
+    color: var(--color-primary-navy);
+    font-family: var(--font-family-display);
+    font-weight: 600;
+    transition: var(--transition-bezier);
+}
+
+.logistics-wrapper .nav-item a:hover {
+    color: var(--color-accent-orange);
+}
+
+.logistics-wrapper .hero-deployment-zone {
+    padding-top: var(--spacing-xl);
+    padding-bottom: 0;
+    background-color: var(--color-surface-alt);
+    position: relative;
+    overflow: hidden;
+}
+
+.logistics-wrapper .hero-grid-architecture {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-lg);
+    align-items: center;
+}
+
+.logistics-wrapper .action-button-group {
+    display: flex;
+    gap: 1rem;
+    margin-top: var(--spacing-md);
+}
+
+.logistics-wrapper .shipment-tracking-widget {
+    background: var(--color-surface-white);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: var(--shadow-elevation-2);
+}
+
+.logistics-wrapper .widget-visual-header img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+}
+
+.logistics-wrapper .widget-interactive-body {
+    padding: var(--spacing-md);
+}
+
+.logistics-wrapper .input-append-group {
+    display: flex;
+    margin-top: var(--spacing-sm);
+}
+
+.logistics-wrapper .input-append-group input {
+    flex: 1;
+    padding: 1rem;
+    border: 1px solid var(--color-border-subtle);
+    border-radius: 4px 0 0 4px;
+    font-family: var(--font-family-body);
+    font-size: var(--text-size-base);
+}
+
+.logistics-wrapper .input-append-group input:focus {
+    outline: none;
+    border-color: var(--color-accent-orange);
+}
+
+.logistics-wrapper .input-append-btn {
+    border-radius: 0 4px 4px 0;
+}
+
+.logistics-wrapper .industrial-ticker-tape {
+    width: 100%;
+    overflow: hidden;
+    background: var(--color-primary-navy);
+    color: var(--color-surface-white);
+    padding: var(--spacing-sm) 0;
+    margin-top: var(--spacing-xl);
+}
+
+.logistics-wrapper .ticker-content-track {
+    display: inline-block;
+    white-space: nowrap;
+    font-family: var(--font-family-display);
+    font-size: var(--text-size-h4);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    animation: infinite-ticker-scroll 25s linear infinite;
+}
+
+@keyframes infinite-ticker-scroll {
+    0% {
+        transform: translate3d(0, 0, 0);
+    }
+
+    100% {
+        transform: translate3d(-50%, 0, 0);
+    }
+}
+
+.logistics-wrapper .service-matrix-section,
+.logistics-wrapper .team-deployment-section {
+    padding: var(--spacing-xl) 0;
+}
+
+.logistics-wrapper .css-grid-quadrant {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-lg);
+}
+
+.logistics-wrapper .css-grid-trio {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-lg);
+}
+
+.logistics-wrapper .service-feature-card,
+.logistics-wrapper .team-profile-card {
+    background: var(--color-surface-white);
+    border: 1px solid var(--color-border-subtle);
+    padding: var(--spacing-md);
+    border-radius: 8px;
+    transition: var(--transition-bezier);
+    position: relative;
+}
+
+.logistics-wrapper .service-feature-card:hover {
+    box-shadow: var(--shadow-elevation-2);
+    transform: translateY(-8px);
+    border-color: var(--color-accent-orange);
+}
+
+.logistics-wrapper .card-icon-node {
+    font-size: 3rem;
+    margin-bottom: var(--spacing-sm);
+    color: var(--color-primary-navy);
+}
+
+.logistics-wrapper .readon-link {
+    margin-top: var(--spacing-sm);
+    color: var(--color-accent-orange);
+    font-size: var(--text-size-sm);
+}
+
+@media (max-width: 992px) {
+    .logistics-wrapper .hero-grid-architecture {
+        grid-template-columns: 1fr;
+    }
+
+    .logistics-wrapper .desktop-navigation-matrix,
+    .logistics-wrapper .contact-node:not(:first-child) {
+        display: none;
+    }
+}

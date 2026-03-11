@@ -54,7 +54,7 @@ export default function PersonalInfoPage() {
 
                 <div className="card card-elevated" style={{ padding: 'var(--space-6)', borderRadius: 'var(--radius-2xl)' }}>
                     <div className="flex flex-col gap-4">
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                        <div className="grid grid-2" style={{ gap: '1rem' }}>
                             <div className="form-group">
                                 <label className="form-label">First Name</label>
                                 <input className="form-input" placeholder="Muhammad" value={form.firstName} onChange={e => u('firstName', e.target.value)} />
@@ -64,7 +64,7 @@ export default function PersonalInfoPage() {
                                 <input className="form-input" placeholder="Abubakr" value={form.lastName} onChange={e => u('lastName', e.target.value)} />
                             </div>
                         </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                        <div className="grid grid-2" style={{ gap: '1rem' }}>
                             <div className="form-group">
                                 <label className="form-label">Date of Birth</label>
                                 <input className="form-input" type="date" value={form.dateOfBirth} onChange={e => u('dateOfBirth', e.target.value)} />
@@ -83,7 +83,7 @@ export default function PersonalInfoPage() {
                             <label className="form-label">Home Address</label>
                             <input className="form-input" placeholder="24 Sandstrip Oworoshoki" value={form.address} onChange={e => u('address', e.target.value)} />
                         </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                        <div className="grid grid-2" style={{ gap: '1rem' }}>
                             <div className="form-group">
                                 <label className="form-label">City</label>
                                 <input className="form-input" placeholder="Lagos" value={form.city} onChange={e => u('city', e.target.value)} />
@@ -111,7 +111,7 @@ export default function PersonalInfoPage() {
                             <label className="form-label">Monthly Income (₦)</label>
                             <input className="form-input" type="number" placeholder="350000" value={form.monthlyIncome} onChange={e => u('monthlyIncome', e.target.value)} />
                         </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                        <div className="grid grid-2" style={{ gap: '1rem' }}>
                             <div className="form-group">
                                 <label className="form-label">Employer / Platform</label>
                                 <select className="form-select" value={form.employerName} onChange={e => u('employerName', e.target.value)}>

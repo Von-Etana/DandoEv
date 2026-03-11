@@ -22,9 +22,22 @@ function Stepper({ current }: { current: number }) {
 }
 
 export default function GuarantorPage() {
-    const [form, setForm] = useState({ fullName: '', email: '', phone: '', relationship: '' });
-    const [invited, setInvited] = useState(false);
-    const u = (field: string, value: string) => setForm(prev => ({ ...prev, [field]: value }));
+    const [guarantors, setGuarantors] = useState([
+        { fullName: '', email: '', phone: '', relationship: '', invited: false },
+        { fullName: '', email: '', phone: '', relationship: '', invited: false }
+    ]);
+
+    const updateGuarantor = (index: number, field: string, value: string | boolean) => {
+        setGuarantors(prev => {
+            const next = [...prev];
+            next[index] = { ...next[index], [field]: value };
+            return next;
+        });
+    };
+
+    const handleInvite = (index: number) => {
+        updateGuarantor(index, 'invited', true);
+    };
 
     return (
         <div style={{ minHeight: '100vh', background: 'var(--gray-50)' }}>
@@ -40,48 +53,51 @@ export default function GuarantorPage() {
 
             <div className="container-sm" style={{ padding: '1.5rem 1rem' }}>
                 <Stepper current={3} />
-                <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: 800, marginBottom: '0.5rem' }}>Add a Guarantor</h1>
+                <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: 800, marginBottom: '0.5rem' }}>Add Guarantors</h1>
                 <p style={{ color: 'var(--gray-600)', fontSize: 'var(--text-sm)', marginBottom: '1.5rem', lineHeight: 1.6 }}>
-                    Your guarantor will receive an invite to confirm their identity and accept guarantor obligations.
+                    You must provide two guarantors. They will receive an invite to confirm their identity and accept guarantor obligations.
                 </p>
 
-                <div className="card card-elevated" style={{ padding: 'var(--space-6)', borderRadius: 'var(--radius-2xl)', marginBottom: '1rem' }}>
-                    <div className="flex flex-col gap-4">
-                        <div className="form-group">
-                            <label className="form-label">Full Name</label>
-                            <input className="form-input" placeholder="Guarantor's full name" value={form.fullName} onChange={e => u('fullName', e.target.value)} />
-                        </div>
-                        <div className="form-group">
-                            <label className="form-label">Email Address</label>
-                            <input className="form-input" type="email" placeholder="guarantor@email.com" value={form.email} onChange={e => u('email', e.target.value)} />
-                        </div>
-                        <div className="form-group">
-                            <label className="form-label">Phone Number</label>
-                            <div style={{ position: 'relative' }}>
-                                <span style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--gray-500)', fontSize: 'var(--text-sm)' }}>🇳🇬 +234</span>
-                                <input className="form-input" type="tel" placeholder="8098765432" style={{ paddingLeft: '5rem' }}
-                                    value={form.phone} onChange={e => u('phone', e.target.value)} />
+                {guarantors.map((g, index) => (
+                    <div key={index} className="card card-elevated" style={{ padding: 'var(--space-6)', borderRadius: 'var(--radius-2xl)', marginBottom: '1rem' }}>
+                        <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, marginBottom: '1rem' }}>Guarantor {index + 1}</h3>
+                        <div className="flex flex-col gap-4">
+                            <div className="form-group">
+                                <label className="form-label">Full Name</label>
+                                <input className="form-input" placeholder="Guarantor's full name" value={g.fullName} onChange={e => updateGuarantor(index, 'fullName', e.target.value)} />
                             </div>
+                            <div className="form-group">
+                                <label className="form-label">Email Address</label>
+                                <input className="form-input" type="email" placeholder="guarantor@email.com" value={g.email} onChange={e => updateGuarantor(index, 'email', e.target.value)} />
+                            </div>
+                            <div className="form-group">
+                                <label className="form-label">Phone Number</label>
+                                <div style={{ position: 'relative' }}>
+                                    <span style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--gray-500)', fontSize: 'var(--text-sm)' }}>🇳🇬 +234</span>
+                                    <input className="form-input" type="tel" placeholder="8098765432" style={{ paddingLeft: '5rem' }}
+                                        value={g.phone} onChange={e => updateGuarantor(index, 'phone', e.target.value)} />
+                                </div>
+                            </div>
+                            <div className="form-group">
+                                <label className="form-label">Relationship to You</label>
+                                <select className="form-select" value={g.relationship} onChange={e => updateGuarantor(index, 'relationship', e.target.value)}>
+                                    <option value="">Select relationship</option>
+                                    {RELATIONSHIP_TYPES.map(r => <option key={r} value={r}>{r}</option>)}
+                                </select>
+                            </div>
+                            <button className="btn btn-primary btn-full" onClick={() => handleInvite(index)}>
+                                {g.invited ? `✓ Invite Sent to Guarantor ${index + 1}` : `📩 Send Guarantor ${index + 1} Invite`}
+                            </button>
                         </div>
-                        <div className="form-group">
-                            <label className="form-label">Relationship to You</label>
-                            <select className="form-select" value={form.relationship} onChange={e => u('relationship', e.target.value)}>
-                                <option value="">Select relationship</option>
-                                {RELATIONSHIP_TYPES.map(r => <option key={r} value={r}>{r}</option>)}
-                            </select>
-                        </div>
-                        <button className="btn btn-primary btn-full" onClick={() => setInvited(true)}>
-                            {invited ? '✓ Invite Sent' : '📩 Send Guarantor Invite'}
-                        </button>
                     </div>
-                </div>
+                ))}
 
-                {invited && (
+                {(guarantors[0].invited || guarantors[1].invited) && (
                     <div className="alert alert-success animate-fade-in-up" style={{ marginBottom: '1rem' }}>
                         <span>✅</span>
                         <div>
-                            <strong>Invite sent successfully!</strong>
-                            <p style={{ fontSize: 'var(--text-xs)', marginTop: '0.25rem' }}>Your guarantor will receive an email and SMS with instructions to verify their identity.</p>
+                            <strong>{guarantors[0].invited && guarantors[1].invited ? 'Invites sent successfully!' : 'Invite sent successfully!'}</strong>
+                            <p style={{ fontSize: 'var(--text-xs)', marginTop: '0.25rem' }}>Your guarantor{guarantors[0].invited && guarantors[1].invited ? 's' : ''} will receive an email and SMS with instructions to verify their identity.</p>
                         </div>
                     </div>
                 )}

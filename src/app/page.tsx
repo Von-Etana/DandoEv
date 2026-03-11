@@ -80,7 +80,7 @@ export default function HomePage() {
             }}>
               Ride electric, pay smart. Get your dream e-bike today with flexible installment plans starting from {formatNaira(calculateEMI(300000, 15, 12))}/month.
             </p>
-            <div className={`flex gap-4 flex-wrap justify-center ${mounted ? 'animate-fade-in-up stagger-3' : ''}`} style={{ opacity: mounted ? 1 : 0 }}>
+            <div className={`flex gap-4 flex-wrap justify-center hero-cta ${mounted ? 'animate-fade-in-up stagger-3' : ''}`} style={{ opacity: mounted ? 1 : 0 }}>
               <Link href="/bikes" className="btn btn-primary btn-lg">
                 Browse Bikes <span>→</span>
               </Link>

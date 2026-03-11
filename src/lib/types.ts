@@ -135,8 +135,8 @@ export interface LoanApplication {
   status: LoanStatus;
   riskScore: number;
   kycVerified: boolean;
-  guarantorId?: string;
-  guarantorVerified: boolean;
+  guarantorIds?: string[];
+  guarantorsVerified: boolean;
   adminNotes?: string;
   rejectionReason?: string;
   approvedBy?: string;

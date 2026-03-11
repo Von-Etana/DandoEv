@@ -23,7 +23,7 @@ export default function SubmitPage() {
                         {[
                             { icon: '📋', title: 'Application Review', desc: 'Our team reviews your documents and KYC information', status: 'In Progress' },
                             { icon: '✅', title: 'KYC Verification', desc: 'We verify your identity, BVN, and facial match', status: 'Pending' },
-                            { icon: '👤', title: 'Guarantor Verification', desc: 'Your guarantor completes their verification process', status: 'Pending' },
+                            { icon: '👤', title: 'Guarantors Verification', desc: 'Your guarantors complete their verification process', status: 'Pending' },
                             { icon: '💰', title: 'Approval & Disbursement', desc: 'Once approved, your bike will be dispatched', status: 'Pending' },
                         ].map((step, i) => (
                             <div key={i} className="flex items-start gap-3">

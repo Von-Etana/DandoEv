@@ -22,7 +22,7 @@ export default function CheckoutPage() {
             </nav>
 
             <div className="container" style={{ maxWidth: '900px', padding: '2rem 1rem' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '2rem' }}>
+                <div className="grid grid-2" style={{ gap: '2rem' }}>
                     {/* Left */}
                     <div>
                         {step === 1 ? (
@@ -33,7 +33,7 @@ export default function CheckoutPage() {
                                         <label className="form-label">Delivery Address</label>
                                         <input className="form-input" placeholder="Street address" value={delivery.address} onChange={e => setDelivery(d => ({ ...d, address: e.target.value }))} />
                                     </div>
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                    <div className="grid grid-2" style={{ gap: '1rem' }}>
                                         <div className="form-group">
                                             <label className="form-label">City</label>
                                             <input className="form-input" placeholder="City" value={delivery.city} onChange={e => setDelivery(d => ({ ...d, city: e.target.value }))} />

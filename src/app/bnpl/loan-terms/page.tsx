@@ -68,7 +68,7 @@ export default function LoanTermsPage() {
                 {/* Tenure Selection */}
                 <div className="card card-elevated" style={{ padding: 'var(--space-6)', borderRadius: 'var(--radius-2xl)', marginBottom: '1rem' }}>
                     <h3 style={{ fontWeight: 700, marginBottom: '1rem' }}>Select Tenure</h3>
-                    <div className="grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem' }}>
+                    <div className="grid grid-3" style={{ gap: '0.5rem' }}>
                         {BNPL_CONFIG.tenureOptions.map(t => (
                             <button key={t} onClick={() => setSelectedTenure(t)}
                                 style={{
@@ -140,7 +140,7 @@ export default function LoanTermsPage() {
                         <p>4. I agree that the financed bike remains collateral until the loan is fully repaid.</p>
                         <p>5. I acknowledge that DandoEv may enable GPS tracking and/or immobilizer features on financed bikes.</p>
                         <p>6. Early repayment is allowed with no additional penalties.</p>
-                        <p>7. My guarantor will be contacted in the event of default.</p>
+                        <p>7. My guarantors will be contacted in the event of default.</p>
                     </div>
                     <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', cursor: 'pointer' }}>
                         <input type="checkbox" checked={accepted} onChange={e => setAccepted(e.target.checked)}

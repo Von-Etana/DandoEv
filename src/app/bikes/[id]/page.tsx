@@ -51,7 +51,7 @@ export default function BikeDetailPage() {
             </nav>
 
             <div className="container" style={{ padding: '2rem 1rem', maxWidth: '1100px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem' }}>
+                <div className="grid grid-2" style={{ gap: '3rem' }}>
                     {/* Left: Image */}
                     <div>
                         <div style={{
@@ -95,7 +95,7 @@ export default function BikeDetailPage() {
                         <p style={{ color: 'var(--gray-600)', lineHeight: 1.7, marginBottom: '1.5rem' }}>{bike.description}</p>
 
                         {/* Specs */}
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem', marginBottom: '1.5rem' }}>
+                        <div className="grid grid-3" style={{ gap: '0.75rem', marginBottom: '1.5rem' }}>
                             {[
                                 { icon: '⚡', label: 'Motor', value: `${bike.motorPower}W` },
                                 { icon: '🔋', label: 'Battery', value: `${bike.batteryCapacity}Wh` },

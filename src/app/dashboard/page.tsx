@@ -85,7 +85,7 @@ export default function CustomerDashboard() {
                                         <div style={{ height: '100%', width: `${(paidCount / activeLoan.tenure) * 100}%`, background: 'var(--accent)', borderRadius: 'var(--radius-full)', transition: 'width 0.5s ease' }} />
                                     </div>
                                 </div>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem' }}>
+                                <div className="grid grid-3" style={{ gap: '0.75rem' }}>
                                     <div style={{ padding: '0.75rem', background: 'var(--gray-50)', borderRadius: 'var(--radius-lg)', textAlign: 'center' }}>
                                         <div style={{ fontSize: 'var(--text-xs)', color: 'var(--gray-500)' }}>Monthly</div>
                                         <div style={{ fontWeight: 700, fontSize: 'var(--text-sm)' }}>{formatNaira(activeLoan.monthlyRepayment)}</div>

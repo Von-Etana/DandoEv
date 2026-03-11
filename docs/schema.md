@@ -124,8 +124,8 @@ Users ───< Orders ───> Bikes
 | status | ENUM('pending','under_review','approved','rejected','active','completed','defaulted') | DEFAULT 'pending' |
 | risk_score | INTEGER | |
 | kyc_verified | BOOLEAN | DEFAULT false |
-| guarantor_id | UUID | REFERENCES guarantors(id) |
-| guarantor_verified | BOOLEAN | DEFAULT false |
+| guarantor_ids | UUID[] | |
+| guarantors_verified | BOOLEAN | DEFAULT false |
 | admin_notes | TEXT | |
 | rejection_reason | TEXT | |
 | approved_by | UUID | REFERENCES users(id) |
