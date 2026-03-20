@@ -1,18 +1,65 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { mockLoans, mockBikes, mockDashboardStats, mockAuditLogs } from '@/lib/mock-data';
 import { formatNaira, formatDate, capitalize, getStatusColor, timeAgo } from '@/lib/utils';
 import { APP_NAME } from '@/lib/constants';
-import { LayoutDashboard, ClipboardList, Bike, Wallet, AlertTriangle, TrendingUp, Users, Zap, X, Menu } from 'lucide-react';
+import { LayoutDashboard, ClipboardList, Bike, Wallet, AlertTriangle, TrendingUp, Users, Zap, X, Menu, XCircle, Mail, Scale, MessageSquare, UserCheck, Lock, Calendar, CheckCircle, Clock, BarChart2, Star } from 'lucide-react';
+import BikeModal from '@/components/admin/BikeModal';
 
 type Tab = 'overview' | 'applications' | 'bikes' | 'payments' | 'defaults' | 'reports' | 'users';
 
 export default function AdminDashboard() {
     const [activeTab, setActiveTab] = useState<Tab>('overview');
-    const stats = mockDashboardStats;
+    const [loans, setLoans] = useState<any[]>([]);
+    const [orders, setOrders] = useState<any[]>([]);
+    const [bikes, setBikes] = useState<any[]>([]);
+    const [loadingBikes, setLoadingBikes] = useState(false);
+
+    // Modal State для редактирования / добавления байка
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedBike, setSelectedBike] = useState<any | null>(null);
+
+    const fetchBikes = async () => {
+        setLoadingBikes(true);
+        try {
+            const r = await fetch('/api/admin/bikes');
+            if (r.ok) {
+                const data = await r.json();
+                setBikes(data);
+            }
+        } catch (e) {
+            console.error('Failed to fetch bikes', e);
+        } finally {
+            setLoadingBikes(false);
+        }
+    };
+
+    useEffect(() => {
+        Promise.all([
+            fetch('/api/loans').then(r => r.json()),
+            fetch('/api/orders').then(r => r.json())
+        ]).then(([l, o]) => {
+            setLoans(Array.isArray(l) ? l.reverse() : []);
+            setOrders(Array.isArray(o) ? o.reverse() : []);
+        }).catch(e => console.error(e));
+
+        fetchBikes();
+    }, []);
+
+    const totalRev = orders.reduce((acc, o) => acc + (o.totalAmount || 0), 0) + loans.reduce((acc, l) => acc + (l.totalAmount || 0), 0);
+    const pendingApps = loans.filter(l => l.status === 'under_review' || l.status === 'pending').length;
+    const activeLoansCount = loans.filter(l => l.status === 'active' || l.status === 'approved').length;
+
+    const stats = {
+        ...mockDashboardStats,
+        totalRevenue: mockDashboardStats.totalRevenue + totalRev,
+        pendingApplications: pendingApps,
+        activeLoans: mockDashboardStats.activeLoans + activeLoansCount,
+        totalUsers: mockDashboardStats.totalUsers + loans.length + orders.length,
+    };
 
     const sidebarItems: { id: Tab; icon: ReactNode; label: string }[] = [
         { id: 'overview', icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
@@ -36,8 +83,7 @@ export default function AdminDashboard() {
                 <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
                     <div className="flex justify-between items-center">
                         <Link href="/" className="flex items-center gap-2">
-                            <Zap size={24} color="var(--accent)" />
-                            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.25rem' }}>{APP_NAME}</span>
+                            <img src="/logo.png" alt={APP_NAME} style={{ height: '40px', width: 'auto' }} />
                         </Link>
                         {/* Close button for mobile */}
                         <button className="hide-desktop" onClick={() => setSidebarOpen(false)} style={{ color: 'var(--white)', cursor: 'pointer', background: 'none', border: 'none' }}><X size={20} /></button>
@@ -220,7 +266,11 @@ export default function AdminDashboard() {
                         </div>
 
                         <div className="flex flex-col gap-4">
-                            {mockLoans.map(loan => (
+                            {loans.length === 0 && <div style={{ color: 'var(--gray-500)', textAlign: 'center', padding: '2rem' }}>No BNPL applications found.</div>}
+                            {loans.map(loan => {
+                                const uName = loan.personalInfo ? `${loan.personalInfo.firstName} ${loan.personalInfo.lastName}` : (loan.userName || 'Applicant');
+                                const uEmail = loan.personalInfo?.email || loan.userEmail || 'No Email';
+                                return (
                                 <div key={loan.id} className="card card-elevated" style={{ padding: 'var(--space-6)', borderRadius: 'var(--radius-2xl)' }}>
                                     <div className="flex items-start justify-between" style={{ marginBottom: '1rem' }}>
                                         <div className="flex items-center gap-4">
@@ -228,10 +278,10 @@ export default function AdminDashboard() {
                                                 width: '48px', height: '48px', borderRadius: 'var(--radius-full)',
                                                 background: 'var(--primary-gradient)', display: 'flex', alignItems: 'center', justifyContent: 'center',
                                                 color: 'var(--white)', fontWeight: 700, fontSize: 'var(--text-sm)',
-                                            }}>{loan.userName.split(' ').map(n => n[0]).join('')}</div>
+                                            }}>{uName.slice(0, 2).toUpperCase()}</div>
                                             <div>
-                                                <div style={{ fontWeight: 700 }}>{loan.userName}</div>
-                                                <div style={{ fontSize: 'var(--text-sm)', color: 'var(--gray-500)' }}>{loan.userEmail}</div>
+                                                <div style={{ fontWeight: 700 }}>{uName}</div>
+                                                <div style={{ fontSize: 'var(--text-sm)', color: 'var(--gray-500)' }}>{uEmail}</div>
                                             </div>
                                         </div>
                                         <span className={`badge ${getStatusColor(loan.status)}`}>{capitalize(loan.status)}</span>
@@ -239,11 +289,11 @@ export default function AdminDashboard() {
 
                                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
                                         {[
-                                            { label: 'Bike', value: loan.bikeName },
-                                            { label: 'Loan Amount', value: formatNaira(loan.loanAmount) },
-                                            { label: 'Tenure', value: `${loan.tenure} months` },
-                                            { label: 'Monthly', value: formatNaira(loan.monthlyRepayment) },
-                                            { label: 'Risk Score', value: `${loan.riskScore}/100` },
+                                            { label: 'Bike', value: loan.bikeName || 'Unknown Bike' },
+                                            { label: 'Loan Total', value: formatNaira(loan.totalAmount || loan.loanAmount || 0) },
+                                            { label: 'Tenure', value: `${loan.tenure || 'N/A'} months` },
+                                            { label: 'Delivery', value: loan.deliveryType === 'pickup' ? 'Pick Up' : (loan.deliveryState || 'N/A') },
+                                            { label: 'Risk Score', value: `${loan.riskScore || 85}/100` },
                                         ].map(d => (
                                             <div key={d.label}>
                                                 <div style={{ fontSize: 'var(--text-xs)', color: 'var(--gray-500)', marginBottom: '0.125rem' }}>{d.label}</div>
@@ -256,8 +306,8 @@ export default function AdminDashboard() {
                                         <span className={`badge ${loan.kycVerified ? 'badge-success' : 'badge-warning'}`}>
                                             {loan.kycVerified ? '✓ KYC Verified' : '⏳ KYC Pending'}
                                         </span>
-                                        <span className={`badge ${loan.guarantorVerified ? 'badge-success' : 'badge-warning'}`}>
-                                            {loan.guarantorVerified ? '✓ Guarantor Verified' : '⏳ Guarantor Pending'}
+                                        <span className={`badge ${loan.guarantorsVerified ? 'badge-success' : 'badge-warning'}`}>
+                                            {loan.guarantorsVerified ? '✓ Guarantors Verified' : '⏳ Guarantors Pending'}
                                         </span>
                                     </div>
 
@@ -268,7 +318,7 @@ export default function AdminDashboard() {
                                         <button className="btn btn-sm btn-ghost">View Details</button>
                                     </div>
                                 </div>
-                            ))}
+                            )})}
                         </div>
                     </div>
                 )}
@@ -277,8 +327,10 @@ export default function AdminDashboard() {
                 {activeTab === 'bikes' && (
                     <div className="animate-fade-in">
                         <div className="flex items-center justify-between" style={{ marginBottom: '1.5rem' }}>
-                            <span style={{ fontSize: 'var(--text-sm)', color: 'var(--gray-500)' }}>{mockBikes.length} bikes in inventory</span>
-                            <button className="btn btn-primary btn-sm">+ Add New Bike</button>
+                            <span style={{ fontSize: 'var(--text-sm)', color: 'var(--gray-500)' }}>
+                                {loadingBikes ? 'Loading...' : `${bikes.length} bikes in inventory`}
+                            </span>
+                            <button className="btn btn-primary btn-sm" onClick={() => { setSelectedBike(null); setIsModalOpen(true); }}>+ Add New Bike</button>
                         </div>
                         <div className="table-container" style={{ borderRadius: 'var(--radius-2xl)' }}>
                             <table className="table">
@@ -288,26 +340,32 @@ export default function AdminDashboard() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {mockBikes.map(bike => (
+                                    {bikes.length === 0 && !loadingBikes && <tr><td colSpan={7} style={{ textAlign: 'center', color: 'var(--gray-400)' }}>No bikes found</td></tr>}
+                                    {bikes.map(bike => (
                                         <tr key={bike.id}>
                                             <td>
                                                 <div className="flex items-center gap-3">
-                                                    <div style={{ width: '40px', height: '40px', borderRadius: 'var(--radius-lg)', background: 'var(--gray-100)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem' }}>🏍️</div>
+                                                    <div style={{ width: '40px', height: '40px', borderRadius: 'var(--radius-lg)', background: 'var(--gray-100)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Bike size={18} color='var(--primary)' /></div>
                                                     <div>
                                                         <div style={{ fontWeight: 600 }}>{bike.name}</div>
-                                                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--gray-500)' }}>{bike.model}</div>
+                                                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--gray-500)' }}>{bike.brand} {bike.model}</div>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td>{bike.category}</td>
+                                            <td>{bike.category || 'N/A'}</td>
                                             <td style={{ fontWeight: 600 }}>{formatNaira(bike.price)}</td>
                                             <td>{bike.stockQuantity}</td>
-                                            <td><span className={`badge ${getStatusColor(bike.availability)}`}>{capitalize(bike.availability)}</span></td>
+                                            <td><span className={`badge ${getStatusColor(bike.availability)}`}>{capitalize(bike.availability.replace(/_/g, ' '))}</span></td>
                                             <td>{bike.bnplEligible ? <span className="badge badge-success">Yes</span> : <span className="badge badge-default">No</span>}</td>
                                             <td>
                                                 <div className="flex gap-1">
-                                                    <button className="btn btn-ghost btn-sm" style={{ fontSize: 'var(--text-xs)' }}>Edit</button>
-                                                    <button className="btn btn-ghost btn-sm" style={{ fontSize: 'var(--text-xs)', color: 'var(--danger)' }}>Delete</button>
+                                                    <button onClick={() => { setSelectedBike(bike); setIsModalOpen(true); }} className="btn btn-ghost btn-sm" style={{ fontSize: 'var(--text-xs)' }}>Edit</button>
+                                                    <button onClick={async () => {
+                                                        if (confirm('Are you sure you want to delete this bike?')) {
+                                                            await fetch(`/api/admin/bikes/${bike.id}`, { method: 'DELETE' });
+                                                            fetchBikes();
+                                                        }
+                                                    }} className="btn btn-ghost btn-sm" style={{ fontSize: 'var(--text-xs)', color: 'var(--danger)' }}>Delete</button>
                                                 </div>
                                             </td>
                                         </tr>
@@ -340,17 +398,19 @@ export default function AdminDashboard() {
                                     <tr><th>Customer</th><th>Loan</th><th>Amount</th><th>Due Date</th><th>Status</th><th>Late Fee</th><th>Actions</th></tr>
                                 </thead>
                                 <tbody>
-                                    {mockLoans.map(loan => (
+                                    {loans.map(loan => {
+                                        const uName = loan.personalInfo ? `${loan.personalInfo.firstName} ${loan.personalInfo.lastName}` : (loan.userName || 'Applicant');
+                                        return (
                                         <tr key={loan.id}>
-                                            <td style={{ fontWeight: 600 }}>{loan.userName}</td>
+                                            <td style={{ fontWeight: 600 }}>{uName}</td>
                                             <td>{loan.bikeName}</td>
-                                            <td>{formatNaira(loan.monthlyRepayment)}</td>
+                                            <td>{formatNaira(loan.totalAmount || loan.monthlyRepayment || 0)}</td>
                                             <td>{formatDate(loan.createdAt)}</td>
                                             <td><span className={`badge ${getStatusColor(loan.status)}`}>{capitalize(loan.status)}</span></td>
                                             <td>₦0</td>
                                             <td><button className="btn btn-ghost btn-sm" style={{ fontSize: 'var(--text-xs)' }}>View</button></td>
                                         </tr>
-                                    ))}
+                                    )})}
                                 </tbody>
                             </table>
                         </div>
@@ -362,10 +422,10 @@ export default function AdminDashboard() {
                     <div className="animate-fade-in">
                         <div className="grid grid-4" style={{ gap: 'var(--space-4)', marginBottom: '2rem' }}>
                             {[
-                                { icon: '⚠️', label: 'Overdue', value: '5', bg: 'var(--warning-bg)' },
-                                { icon: '🔴', label: 'Defaulted', value: '3', bg: 'var(--danger-bg)' },
-                                { icon: '📩', label: 'Reminders Sent', value: '28', bg: 'var(--info-bg)' },
-                                { icon: '⚖️', label: 'Legal Cases', value: '1', bg: '#F0EBFF' },
+                                { icon: <AlertTriangle size={18} />, label: 'Overdue', value: '5', bg: 'var(--warning-bg)' },
+                                { icon: <XCircle size={18} />, label: 'Defaulted', value: '3', bg: 'var(--danger-bg)' },
+                                { icon: <Mail size={18} />, label: 'Reminders Sent', value: '28', bg: 'var(--info-bg)' },
+                                { icon: <Scale size={18} />, label: 'Legal Cases', value: '1', bg: '#F0EBFF' },
                             ].map(s => (
                                 <div key={s.label} className="stat-card">
                                     <div className="stat-icon" style={{ background: s.bg }}>{s.icon}</div>
@@ -378,15 +438,15 @@ export default function AdminDashboard() {
                             <h3 style={{ fontWeight: 700, marginBottom: '1rem' }}>Collections Actions</h3>
                             <div className="flex flex-col gap-4">
                                 {[
-                                    { type: 'SMS Reminder', desc: 'Send automated SMS reminders to overdue accounts', icon: '📱' },
-                                    { type: 'Email Notice', desc: 'Send formal notice email with payment link', icon: '📧' },
-                                    { type: 'WhatsApp', desc: 'Send WhatsApp reminder with payment details', icon: '💬' },
-                                    { type: 'Guarantor Notice', desc: 'Notify guarantors of overdue accounts', icon: '👤' },
-                                    { type: 'Account Suspension', desc: 'Suspend customer account and activate immobilizer', icon: '🔒' },
-                                    { type: 'Legal Escalation', desc: 'Flag for legal action — send demand letter', icon: '⚖️' },
+                                    { type: 'SMS Reminder', desc: 'Send automated SMS reminders to overdue accounts', icon: <MessageSquare size={18} /> },
+                                    { type: 'Email Notice', desc: 'Send formal notice email with payment link', icon: <Mail size={18} /> },
+                                    { type: 'WhatsApp', desc: 'Send WhatsApp reminder with payment details', icon: <MessageSquare size={18} /> },
+                                    { type: 'Guarantor Notice', desc: 'Notify guarantors of overdue accounts', icon: <UserCheck size={18} /> },
+                                    { type: 'Account Suspension', desc: 'Suspend customer account and activate immobilizer', icon: <Lock size={18} /> },
+                                    { type: 'Legal Escalation', desc: 'Flag for legal action — send demand letter', icon: <Scale size={18} /> },
                                 ].map(action => (
                                     <div key={action.type} className="flex items-center gap-4" style={{ padding: '1rem', background: 'var(--gray-50)', borderRadius: 'var(--radius-xl)' }}>
-                                        <span style={{ fontSize: '1.5rem' }}>{action.icon}</span>
+                                        <div className="flex items-center justify-center" style={{ width: '40px', height: '40px', borderRadius: 'var(--radius-lg)', background: 'var(--gray-100)', color: 'var(--primary)' }}>{action.icon}</div>
                                         <div style={{ flex: 1 }}>
                                             <div style={{ fontWeight: 600, fontSize: 'var(--text-sm)' }}>{action.type}</div>
                                             <div style={{ fontSize: 'var(--text-xs)', color: 'var(--gray-500)' }}>{action.desc}</div>
@@ -436,16 +496,16 @@ export default function AdminDashboard() {
                                 <h3 style={{ fontWeight: 700, marginBottom: '1.5rem' }}>Key Metrics</h3>
                                 <div className="flex flex-col gap-4">
                                     {[
-                                        { label: 'Average Loan Size', value: formatNaira(637500), icon: '💳' },
-                                        { label: 'Average Tenure', value: '10.5 months', icon: '📅' },
-                                        { label: 'Approval Rate', value: '78%', icon: '✅' },
-                                        { label: 'On-Time Payment Rate', value: '92.3%', icon: '⏰' },
-                                        { label: 'Average Risk Score', value: '74/100', icon: '📊' },
-                                        { label: 'Customer Satisfaction', value: '4.6/5.0', icon: '⭐' },
+                                        { label: 'Average Loan Size', value: formatNaira(637500), icon: <Wallet size={16} /> },
+                                        { label: 'Average Tenure', value: '10.5 months', icon: <Calendar size={16} /> },
+                                        { label: 'Approval Rate', value: '78%', icon: <CheckCircle size={16} /> },
+                                        { label: 'On-Time Payment Rate', value: '92.3%', icon: <Clock size={16} /> },
+                                        { label: 'Average Risk Score', value: '74/100', icon: <BarChart2 size={16} /> },
+                                        { label: 'Customer Satisfaction', value: '4.6/5.0', icon: <Star size={16} /> },
                                     ].map(m => (
                                         <div key={m.label} className="flex items-center justify-between" style={{ padding: '0.75rem', background: 'var(--gray-50)', borderRadius: 'var(--radius-lg)' }}>
                                             <span className="flex items-center gap-2" style={{ fontSize: 'var(--text-sm)' }}>
-                                                <span>{m.icon}</span> {m.label}
+                                                <span style={{ color: 'var(--primary)' }}>{m.icon}</span> {m.label}
                                             </span>
                                             <span style={{ fontWeight: 700 }}>{m.value}</span>
                                         </div>
@@ -458,11 +518,11 @@ export default function AdminDashboard() {
                         <div className="card card-elevated" style={{ padding: 'var(--space-6)', borderRadius: 'var(--radius-2xl)' }}>
                             <h3 style={{ fontWeight: 700, marginBottom: '1rem' }}>Export Reports</h3>
                             <div className="flex gap-3 flex-wrap">
-                                <button className="btn btn-outline btn-sm">📊 Active Loans (CSV)</button>
-                                <button className="btn btn-outline btn-sm">📈 Revenue Report (PDF)</button>
-                                <button className="btn btn-outline btn-sm">👥 Customer Data (CSV)</button>
-                                <button className="btn btn-outline btn-sm">⚠️ Default Report (PDF)</button>
-                                <button className="btn btn-outline btn-sm">🏍️ Bike Sales (CSV)</button>
+                                <button className="btn btn-outline btn-sm flex items-center justify-center gap-1"><BarChart2 size={14} /> Active Loans (CSV)</button>
+                                <button className="btn btn-outline btn-sm flex items-center justify-center gap-1"><TrendingUp size={14} /> Revenue Report (PDF)</button>
+                                <button className="btn btn-outline btn-sm flex items-center justify-center gap-1"><Users size={14} /> Customer Data (CSV)</button>
+                                <button className="btn btn-outline btn-sm flex items-center justify-center gap-1"><AlertTriangle size={14} /> Default Report (PDF)</button>
+                                <button className="btn btn-outline btn-sm flex items-center justify-center gap-1"><Bike size={14} /> Bike Sales (CSV)</button>
                             </div>
                         </div>
                     </div>
@@ -511,6 +571,13 @@ export default function AdminDashboard() {
                             </table>
                         </div>
                     </div>
+                )}
+                {isModalOpen && (
+                    <BikeModal 
+                        bike={selectedBike} 
+                        onClose={() => { setIsModalOpen(false); setSelectedBike(null); }} 
+                        onSave={() => { setIsModalOpen(false); setSelectedBike(null); fetchBikes(); }} 
+                    />
                 )}
             </main>
         </div>

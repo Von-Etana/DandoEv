@@ -25,7 +25,7 @@ export function calculateInstallment(principal: number, monthlyInterestRate: num
     totalInterest: number;
     totalRepayable: number;
     numberOfInstallments: number;
-    insuranceFee: number;
+    healthInsuranceFee: number;
     processingFee: number;
     totalSavings: number;
 } {
@@ -35,9 +35,8 @@ export function calculateInstallment(principal: number, monthlyInterestRate: num
     // Interest = Principal * (Rate/100) * Months
     const totalInterest = Math.round(principal * (monthlyInterestRate / 100) * tenureMonths);
 
-    // 3. Fees
-    // Insurance: 7% of Principal (Bike Value)
-    const insuranceFee = Math.round(principal * (7 / 100));
+    // Health Insurance: Fixed 60,000 NGN
+    const healthInsuranceFee = 60000;
     // Processing Fee: Fixed 20,000
     const processingFee = 20000;
 
@@ -48,8 +47,8 @@ export function calculateInstallment(principal: number, monthlyInterestRate: num
     const totalSavings = totalDays * 1000;
 
     // 5. Total Repayable
-    // Includes Principal + Interest + Insurance + Processing + Savings
-    const totalRepayable = principal + totalInterest + insuranceFee + processingFee + totalSavings;
+    // Includes Principal + Interest + Health Insurance + Processing + Savings
+    const totalRepayable = principal + totalInterest + healthInsuranceFee + processingFee + totalSavings;
 
     // 6. Installments
     // Bi-daily (Every 2 days)
@@ -61,7 +60,7 @@ export function calculateInstallment(principal: number, monthlyInterestRate: num
         totalInterest,
         totalRepayable,
         numberOfInstallments,
-        insuranceFee,
+        healthInsuranceFee,
         processingFee,
         totalSavings
     };

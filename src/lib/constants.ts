@@ -1,9 +1,10 @@
 // ============================================================
 // E-Bike BNPL Platform - App Constants
 // ============================================================
+import { CreditCard, Building, Wallet, IdCard, BookOpen, Car } from 'lucide-react';
 
 export const APP_NAME = 'DandoEv';
-export const APP_TAGLINE = 'Ride Electric, Pay Smart';
+export const APP_TAGLINE = 'The future is here';
 export const APP_DESCRIPTION = 'Nigeria\'s premier electric bike marketplace with flexible Buy Now, Pay Later options.';
 
 export const CURRENCY = 'NGN';
@@ -16,9 +17,9 @@ export const BNPL_CONFIG = {
     defaultDownPaymentPercent: 0,
     interestRate: 4, // Monthly percentage
     processingFee: 20000, // Fixed NGN
-    insuranceFeePercent: 7, // % of bike value
+    healthInsuranceFee: 60000, // Fixed NGN
     dailySavings: 1000, // NGN per day
-    tenureOptions: [12, 18], // months
+    tenureOptions: [6, 12, 18], // months
     defaultTenure: 12,
     repaymentFrequencyDays: 2, // Every 2 days
     lateFeePercent: 2,
@@ -30,16 +31,16 @@ export const BNPL_CONFIG = {
 
 // Payment Methods
 export const PAYMENT_METHODS = [
-    { id: 'card', name: 'Debit/Credit Card', icon: '💳', description: 'Pay securely with your card' },
-    { id: 'bank_transfer', name: 'Bank Transfer', icon: '🏦', description: 'Direct bank transfer' },
-    { id: 'wallet', name: 'DandoEv Wallet', icon: '👛', description: 'Pay from your wallet balance' },
+    { id: 'card', name: 'Debit/Credit Card', icon: CreditCard, description: 'Pay securely with your card' },
+    { id: 'bank_transfer', name: 'Bank Transfer', icon: Building, description: 'Direct bank transfer' },
+    { id: 'wallet', name: 'DandoEv Wallet', icon: Wallet, description: 'Pay from your wallet balance' },
 ] as const;
 
 // KYC Document Types
 export const KYC_DOCUMENT_TYPES = [
-    { id: 'national_id', name: 'National Identity Number - NIN', icon: '🪪' },
-    { id: 'passport', name: 'International Passport', icon: '📘' },
-    { id: 'drivers_license', name: 'Driver\'s License', icon: '🚗' },
+    { id: 'national_id', name: 'National Identity Number - NIN', icon: IdCard },
+    { id: 'passport', name: 'International Passport', icon: BookOpen },
+    { id: 'drivers_license', name: 'Driver\'s License', icon: Car },
 ] as const;
 
 // Nigerian States

@@ -1,0 +1,124 @@
+// ============================================================
+// Queue System — BullMQ Queues & Workers
+// ============================================================
+import { Queue, Worker, Job, type ConnectionOptions } from 'bullmq';
+import logger from './logger';
+
+// ---- Shared Connection ----
+
+function getConnection(): ConnectionOptions {
+  const url = process.env.REDIS_URL || 'redis://localhost:6379';
+  // Parse the URL to extract host, port, etc.
+  const parsed = new URL(url);
+  return {
+    host: parsed.hostname || 'localhost',
+    port: parseInt(parsed.port || '6379'),
+    password: parsed.password || undefined,
+    maxRetriesPerRequest: null, // Required by BullMQ
+  };
+}
+
+// ---- Default Job Options ----
+
+const defaultJobOptions = {
+  attempts: 3,
+  backoff: {
+    type: 'exponential' as const,
+    delay: 5000, // 5s → 25s → 125s
+  },
+  removeOnComplete: { count: 1000 },
+  removeOnFail: { count: 5000 },
+};
+
+// ---- Queue Names ----
+
+export const QUEUE_NAMES = {
+  PAYMENT_PROCESSING: 'payment-processing',
+  NOTIFICATION: 'notification',
+  KYC_VERIFICATION: 'kyc-verification',
+  RECONCILIATION: 'reconciliation',
+  REPAYMENT_REMINDER: 'repayment-reminder',
+} as const;
+
+// ---- Queue Instances ----
+
+const queues: Map<string, Queue> = new Map();
+
+export function getQueue(name: string): Queue {
+  if (!queues.has(name)) {
+    queues.set(name, new Queue(name, {
+      connection: getConnection(),
+      defaultJobOptions,
+    }));
+  }
+  return queues.get(name)!;
+}
+
+// ---- Job Producers ----
+
+export async function enqueuePaymentJob(data: {
+  eventId: string;
+  eventType: string;
+  payload: unknown;
+}): Promise<string> {
+  const queue = getQueue(QUEUE_NAMES.PAYMENT_PROCESSING);
+  const job = await queue.add('process-payment', data, {
+    jobId: data.eventId, // Prevents duplicate jobs for same event
+  });
+  logger.info({ jobId: job.id, eventId: data.eventId }, 'Payment job enqueued');
+  return job.id!;
+}
+
+export async function enqueueNotification(data: {
+  userId: string;
+  type: string;
+  title: string;
+  message: string;
+  channels?: ('email' | 'sms' | 'push')[];
+}): Promise<string> {
+  const queue = getQueue(QUEUE_NAMES.NOTIFICATION);
+  const job = await queue.add('send-notification', data);
+  return job.id!;
+}
+
+export async function enqueueReconciliation(data: {
+  type: 'payment' | 'overdue' | 'savings' | 'stale';
+  dateRange?: { from: string; to: string };
+}): Promise<string> {
+  const queue = getQueue(QUEUE_NAMES.RECONCILIATION);
+  const job = await queue.add('reconcile', data);
+  return job.id!;
+}
+
+// ---- Worker Factory ----
+
+export function createWorker(
+  queueName: string,
+  processor: (job: Job) => Promise<void>,
+  concurrency: number = 5
+): Worker {
+  const worker = new Worker(queueName, processor, {
+    connection: getConnection(),
+    concurrency,
+  });
+
+  worker.on('completed', (job) => {
+    logger.info({ jobId: job.id, queue: queueName }, 'Job completed');
+  });
+
+  worker.on('failed', (job, error) => {
+    logger.error({ jobId: job?.id, queue: queueName, error: error.message }, 'Job failed');
+    if (job && job.attemptsMade >= (job.opts?.attempts || 3)) {
+      logger.error(
+        { jobId: job.id, queue: queueName },
+        'Job moved to dead-letter queue after exhausting retries'
+      );
+    }
+  });
+
+  worker.on('error', (error) => {
+    logger.error({ queue: queueName, error: error.message }, 'Worker error');
+  });
+
+  return worker;
+}

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { mockBikes } from '@/lib/mock-data';
 import { formatNaira, calculateEMI, capitalize } from '@/lib/utils';
 import { BNPL_CONFIG, APP_NAME, BIKE_CATEGORIES } from '@/lib/constants';
+import { Zap, Battery, Gauge, Star } from 'lucide-react';
 import type { BikeFilters } from '@/lib/types';
 
 export default function BikeCatalogPage() {
@@ -39,8 +40,7 @@ export default function BikeCatalogPage() {
             }}>
                 <div className="container flex items-center justify-between">
                     <Link href="/" className="flex items-center gap-2">
-                        <span style={{ fontSize: '1.5rem' }}>⚡</span>
-                        <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.25rem', color: 'var(--primary)' }}>{APP_NAME}</span>
+                        <img src="/logo.png" alt={APP_NAME} style={{ height: '36px', width: 'auto' }} />
                     </Link>
                     <div className="flex items-center gap-3">
                         <Link href="/dashboard" className="btn btn-ghost btn-sm">Dashboard</Link>
@@ -112,14 +112,10 @@ export default function BikeCatalogPage() {
                             <Link href={`/bikes/${bike.id}`} key={bike.id} className="card animate-fade-in-up" style={{ borderRadius: 'var(--radius-2xl)' }}>
                                 <div style={{
                                     height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    background: bike.category === 'Sports' ? 'linear-gradient(135deg, #1A1A2E, #2D0A4E)' :
-                                        bike.category === 'Cargo' ? 'linear-gradient(135deg, #FFF5EB, #FFDAB9)' :
-                                            bike.category === 'Off-Road' ? 'linear-gradient(135deg, #E8FFF5, #A8E6CF)' :
-                                                bike.category === 'Folding' ? 'linear-gradient(135deg, #EBF5FB, #AED6F1)' :
-                                                    'linear-gradient(135deg, #F0EBFF, #D5C8F0)',
-                                    fontSize: '3.5rem', position: 'relative',
+                                    background: 'var(--gray-100)',
+                                    position: 'relative', overflow: 'hidden',
                                 }}>
-                                    🏍️
+                                    <img src={bike.images && bike.images[0] ? bike.images[0] : '/bikes/placeholder.jpg'} alt={bike.name} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '1rem' }} />
                                     <div style={{ position: 'absolute', top: '12px', left: '12px' }}>
                                         <span className={`badge ${bike.availability === 'in_stock' ? 'badge-success' : bike.availability === 'pre_order' ? 'badge-warning' : 'badge-danger'}`}>
                                             {capitalize(bike.availability)}
@@ -141,10 +137,10 @@ export default function BikeCatalogPage() {
                                         {bike.description}
                                     </p>
                                     <div className="flex items-center gap-4 flex-wrap" style={{ marginBottom: '0.75rem' }}>
-                                        <span className="flex items-center gap-1" style={{ fontSize: 'var(--text-xs)', color: 'var(--gray-500)' }}>⚡ {bike.motorPower}W</span>
-                                        <span className="flex items-center gap-1" style={{ fontSize: 'var(--text-xs)', color: 'var(--gray-500)' }}>🔋 {bike.range}km</span>
-                                        <span className="flex items-center gap-1" style={{ fontSize: 'var(--text-xs)', color: 'var(--gray-500)' }}>🏎️ {bike.topSpeed}km/h</span>
-                                        <span className="flex items-center gap-1" style={{ fontSize: 'var(--text-xs)', color: 'var(--gray-500)' }}>⭐ {bike.rating}</span>
+                                        <span className="flex items-center gap-1" style={{ fontSize: 'var(--text-xs)', color: 'var(--gray-500)' }}><Zap size={14} /> {bike.motorPower}W</span>
+                                        <span className="flex items-center gap-1" style={{ fontSize: 'var(--text-xs)', color: 'var(--gray-500)' }}><Battery size={14} /> {bike.range}km</span>
+                                        <span className="flex items-center gap-1" style={{ fontSize: 'var(--text-xs)', color: 'var(--gray-500)' }}><Gauge size={14} /> {bike.topSpeed}km/h</span>
+                                        <span className="flex items-center gap-1" style={{ fontSize: 'var(--text-xs)', color: 'var(--gray-500)' }}><Star size={14} style={{ fill: 'var(--warning)', color: 'var(--warning)' }} /> {bike.rating}</span>
                                     </div>
                                     <div style={{ borderTop: '1px solid var(--gray-200)', paddingTop: '0.75rem' }}>
                                         <div style={{ fontSize: 'var(--text-xl)', fontWeight: 800, color: 'var(--primary)' }}>{formatNaira(bike.price)}</div>

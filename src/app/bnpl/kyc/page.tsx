@@ -1,8 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { KYC_DOCUMENT_TYPES } from '@/lib/constants';
+import { FileImage, Camera, CheckCircle2 } from 'lucide-react';
 
 const BNPL_STEPS = ['Personal Info', 'Identity (KYC)', 'Financial', 'Guarantor', 'Loan Terms', 'Submit'];
 
@@ -23,10 +25,26 @@ function Stepper({ current }: { current: number }) {
 }
 
 export default function KYCPage() {
+    const router = useRouter();
     const [selectedDocType, setSelectedDocType] = useState('');
     const [bvn, setBvn] = useState('');
     const [selfieUploaded, setSelfieUploaded] = useState(false);
     const [docUploaded, setDocUploaded] = useState(false);
+
+    useEffect(() => {
+        const saved = sessionStorage.getItem('bnpl_data');
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                if (parsed.kyc) {
+                    setSelectedDocType(parsed.kyc.selectedDocType || '');
+                    setBvn(parsed.kyc.bvn || '');
+                    setSelfieUploaded(parsed.kyc.selfieUploaded || false);
+                    setDocUploaded(parsed.kyc.docUploaded || false);
+                }
+            } catch (e) {}
+        }
+    }, []);
 
     return (
         <div style={{ minHeight: '100vh', background: 'var(--gray-50)' }}>
@@ -68,7 +86,7 @@ export default function KYCPage() {
                                     background: selectedDocType === doc.id ? 'rgba(45,10,78,0.03)' : 'var(--white)',
                                     cursor: 'pointer', transition: 'all 0.2s', width: '100%', textAlign: 'left',
                                 }}>
-                                <span style={{ fontSize: '1.25rem' }}>{doc.icon}</span>
+                                <span style={{ fontSize: '1.25rem', display: 'flex' }}><doc.icon size={20} color={selectedDocType === doc.id ? 'var(--primary)' : 'var(--gray-500)'} /></span>
                                 <span style={{ fontWeight: 600, fontSize: 'var(--text-sm)', flex: 1 }}>{doc.name}</span>
                                 <span style={{
                                     width: '20px', height: '20px', borderRadius: '50%',
@@ -91,7 +109,9 @@ export default function KYCPage() {
                                 background: docUploaded ? 'var(--success-bg)' : 'var(--gray-50)',
                                 cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s',
                             }}>
-                            <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>{docUploaded ? '✅' : '📄'}</div>
+                            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.5rem', color: docUploaded ? 'var(--success)' : 'var(--gray-400)' }}>
+                                {docUploaded ? <CheckCircle2 size={32} /> : <FileImage size={32} />}
+                            </div>
                             <div style={{ fontWeight: 600, fontSize: 'var(--text-sm)', color: docUploaded ? 'var(--success)' : 'var(--gray-600)' }}>
                                 {docUploaded ? 'Document uploaded successfully' : 'Tap to upload document'}
                             </div>
@@ -103,7 +123,7 @@ export default function KYCPage() {
                 {/* Selfie Capture */}
                 <div className="card card-elevated" style={{ padding: 'var(--space-6)', borderRadius: 'var(--radius-2xl)', marginBottom: '1rem' }}>
                     <h3 style={{ fontWeight: 700, marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <span style={{ fontSize: '1.25rem' }}>📸</span> Live Selfie Capture
+                        <span style={{ display: 'flex' }}><Camera size={20} /></span> Live Selfie Capture
                     </h3>
                     <p style={{ fontSize: 'var(--text-sm)', color: 'var(--gray-500)', marginBottom: '1rem' }}>
                         Take a clear selfie for facial verification. We&apos;ll match it against your ID document.
@@ -115,7 +135,9 @@ export default function KYCPage() {
                             background: selfieUploaded ? 'var(--success-bg)' : 'var(--gray-50)',
                             cursor: 'pointer', textAlign: 'center',
                         }}>
-                        <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>{selfieUploaded ? '✅' : '🤳'}</div>
+                        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.5rem', color: selfieUploaded ? 'var(--success)' : 'var(--gray-400)' }}>
+                            {selfieUploaded ? <CheckCircle2 size={32} /> : <Camera size={32} />}
+                        </div>
                         <div style={{ fontWeight: 600, fontSize: 'var(--text-sm)', color: selfieUploaded ? 'var(--success)' : 'var(--gray-600)' }}>
                             {selfieUploaded ? 'Selfie captured successfully' : 'Tap to take a selfie'}
                         </div>
@@ -124,7 +146,11 @@ export default function KYCPage() {
 
                 <div className="flex justify-between" style={{ marginTop: '1.5rem' }}>
                     <Link href="/bnpl/personal-info" className="btn btn-ghost">← Back</Link>
-                    <Link href="/bnpl/financial" className="btn btn-primary">Continue →</Link>
+                    <button onClick={() => {
+                        const saved = JSON.parse(sessionStorage.getItem('bnpl_data') || '{}');
+                        sessionStorage.setItem('bnpl_data', JSON.stringify({ ...saved, kyc: { selectedDocType, bvn, selfieUploaded, docUploaded } }));
+                        router.push('/bnpl/financial');
+                    }} className={`btn btn-primary ${(!docUploaded || !selfieUploaded) ? 'disabled' : ''}`} style={{ opacity: (docUploaded && selfieUploaded) ? 1 : 0.5, pointerEvents: (docUploaded && selfieUploaded) ? 'auto' : 'none' }}>Continue →</button>
                 </div>
             </div>
         </div>

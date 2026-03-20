@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation';
 import { mockBikes } from '@/lib/mock-data';
 import { formatNaira, calculateInstallment, calculateDownPayment } from '@/lib/utils';
 import { BNPL_CONFIG, APP_NAME } from '@/lib/constants';
+import { Zap, Battery, Activity, Gauge, Clock, Scale, ShieldCheck, Truck } from 'lucide-react';
 
 export default function BikeDetailPage() {
     const params = useParams();
@@ -26,7 +27,7 @@ export default function BikeDetailPage() {
 
     const downPayment = 0;
     const loanAmount = bike.price;
-    const { installmentAmount, numberOfInstallments, totalInterest, totalRepayable } = calculateInstallment(loanAmount, BNPL_CONFIG.interestRate, selectedTenure);
+    const { installmentAmount, numberOfInstallments, totalInterest, totalRepayable, healthInsuranceFee, processingFee, totalSavings } = calculateInstallment(loanAmount, BNPL_CONFIG.interestRate, selectedTenure);
 
     return (
         <div style={{ minHeight: '100vh', background: 'var(--white)' }}>
@@ -40,8 +41,7 @@ export default function BikeDetailPage() {
                     <div className="flex items-center gap-4">
                         <Link href="/bikes" style={{ fontSize: '1.25rem', color: 'var(--gray-600)' }}>←</Link>
                         <Link href="/" className="flex items-center gap-2">
-                            <span style={{ fontSize: '1.5rem' }}>⚡</span>
-                            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.25rem', color: 'var(--primary)' }}>{APP_NAME}</span>
+                            <img src="/logo.png" alt={APP_NAME} style={{ height: '36px', width: 'auto' }} />
                         </Link>
                     </div>
                     <div className="flex items-center gap-3">
@@ -56,10 +56,10 @@ export default function BikeDetailPage() {
                     <div>
                         <div style={{
                             height: '400px', borderRadius: 'var(--radius-2xl)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            background: bike.category === 'Sports' ? 'linear-gradient(135deg, #1A1A2E, #2D0A4E)' : 'linear-gradient(135deg, #F0EBFF, #E8FFF5)',
-                            fontSize: '6rem', position: 'relative',
+                            background: 'var(--gray-100)',
+                            position: 'relative', overflow: 'hidden',
                         }}>
-                            🏍️
+                            <img src={bike.images && bike.images[0] ? bike.images[0] : '/bikes/placeholder.jpg'} alt={bike.name} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '1rem' }} />
                             {bike.bnplEligible && (
                                 <div style={{ position: 'absolute', top: '16px', right: '16px', background: 'var(--accent)', color: 'var(--primary-dark)', padding: '0.375rem 1rem', borderRadius: 'var(--radius-full)', fontWeight: 700, fontSize: 'var(--text-sm)' }}>BNPL Available</div>
                             )}
@@ -97,15 +97,15 @@ export default function BikeDetailPage() {
                         {/* Specs */}
                         <div className="grid grid-3" style={{ gap: '0.75rem', marginBottom: '1.5rem' }}>
                             {[
-                                { icon: '⚡', label: 'Motor', value: `${bike.motorPower}W` },
-                                { icon: '🔋', label: 'Battery', value: `${bike.batteryCapacity}Wh` },
-                                { icon: '🛣️', label: 'Range', value: `${bike.range}km` },
-                                { icon: '🏎️', label: 'Top Speed', value: `${bike.topSpeed}km/h` },
-                                { icon: '⏱️', label: 'Charge', value: `${bike.chargingTime}h` },
-                                { icon: '⚖️', label: 'Weight', value: `${bike.weight}kg` },
+                                { icon: <Zap size={18} />, label: 'Motor', value: `${bike.motorPower}W` },
+                                { icon: <Battery size={18} />, label: 'Battery', value: `${bike.batteryCapacity}Wh` },
+                                { icon: <Activity size={18} />, label: 'Range', value: `${bike.range}km` },
+                                { icon: <Gauge size={18} />, label: 'Speed', value: `${bike.topSpeed}km/h` },
+                                { icon: <Clock size={18} />, label: 'Charge', value: `${bike.chargingTime}h` },
+                                { icon: <Scale size={18} />, label: 'Weight', value: `${bike.weight}kg` },
                             ].map(s => (
-                                <div key={s.label} style={{ padding: '0.75rem', background: 'var(--gray-50)', borderRadius: 'var(--radius-lg)', textAlign: 'center' }}>
-                                    <div style={{ fontSize: '1.25rem' }}>{s.icon}</div>
+                                <div key={s.label} style={{ padding: '0.75rem', background: 'var(--gray-50)', borderRadius: 'var(--radius-lg)', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                    <div style={{ color: 'var(--primary)', marginBottom: '0.25rem' }}>{s.icon}</div>
                                     <div style={{ fontSize: 'var(--text-xs)', color: 'var(--gray-500)', marginTop: '0.125rem' }}>{s.label}</div>
                                     <div style={{ fontWeight: 700, fontSize: 'var(--text-sm)' }}>{s.value}</div>
                                 </div>
@@ -174,6 +174,9 @@ export default function BikeDetailPage() {
                                         <div className="flex justify-between"><span style={{ color: 'var(--gray-500)' }}>Bike Price</span><span style={{ fontWeight: 600 }}>{formatNaira(bike.price)}</span></div>
                                         <div className="flex justify-between"><span style={{ color: 'var(--gray-500)' }}>Down Payment ({bike.bnplMinDownPayment}%)</span><span style={{ fontWeight: 600 }}>{formatNaira(downPayment)}</span></div>
                                         <div className="flex justify-between"><span style={{ color: 'var(--gray-500)' }}>Loan Amount</span><span style={{ fontWeight: 600 }}>{formatNaira(loanAmount)}</span></div>
+                                        <div className="flex justify-between"><span style={{ color: 'var(--gray-500)' }}>Processing Fee</span><span style={{ fontWeight: 600 }}>{formatNaira(processingFee)}</span></div>
+                                        <div className="flex justify-between"><span style={{ color: 'var(--gray-500)' }}>Health Insurance</span><span style={{ fontWeight: 600 }}>{formatNaira(healthInsuranceFee)}</span></div>
+                                        <div className="flex justify-between"><span style={{ color: 'var(--gray-500)' }}>Compulsory Savings</span><span style={{ fontWeight: 600 }}>{formatNaira(totalSavings)}</span></div>
                                         <div className="flex justify-between"><span style={{ color: 'var(--gray-500)' }}>Total Interest</span><span style={{ fontWeight: 600 }}>{formatNaira(totalInterest)}</span></div>
                                         <div style={{ borderTop: '1px solid var(--gray-300)', paddingTop: '0.375rem', marginTop: '0.25rem' }} className="flex justify-between">
                                             <span style={{ fontWeight: 700 }}>Total Repayable</span><span style={{ fontWeight: 700, color: 'var(--primary)' }}>{formatNaira(totalRepayable)}</span>
@@ -185,7 +188,7 @@ export default function BikeDetailPage() {
                         </div>
 
                         <div className="flex items-center gap-2" style={{ fontSize: 'var(--text-sm)', color: 'var(--gray-500)' }}>
-                            <span>🛡️</span> {bike.warranty} Warranty • 🚚 Free Delivery
+                            <ShieldCheck size={16} color="var(--primary)" /> {bike.warranty} Warranty • <Truck size={16} color="var(--primary)" /> Free Delivery
                         </div>
                     </div>
                 </div >

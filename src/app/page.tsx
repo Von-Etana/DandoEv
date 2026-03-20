@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { mockBikes } from '@/lib/mock-data';
 import { formatNaira, calculateEMI } from '@/lib/utils';
 import { BNPL_CONFIG, APP_NAME } from '@/lib/constants';
+import { ShieldCheck, Bike, Star, Zap, Battery, Gauge, Lock, CheckCircle, Truck, Search, FileText } from 'lucide-react';
 
 export default function HomePage() {
   const [mounted, setMounted] = useState(false);
@@ -23,8 +24,7 @@ export default function HomePage() {
       }}>
         <div className="container flex items-center justify-between">
           <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span style={{ fontSize: '1.75rem' }}>⚡</span>
-            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.5rem', color: 'var(--primary)' }}>{APP_NAME}</span>
+            <img src="/logo.png" alt={APP_NAME} style={{ height: '40px', width: 'auto' }} />
           </Link>
           <div className="flex items-center gap-4">
             <Link href="/bikes" className="hide-mobile" style={{ fontWeight: 500, color: 'var(--gray-700)' }}>Browse Bikes</Link>
@@ -38,7 +38,7 @@ export default function HomePage() {
       {/* ========== HERO ========== */}
       <section style={{
         paddingTop: '120px', paddingBottom: '80px',
-        background: 'linear-gradient(180deg, var(--cream) 0%, #FFE8D6 50%, var(--cream) 100%)',
+        background: 'var(--gray-50)',
         position: 'relative', overflow: 'hidden',
       }}>
         <div style={{
@@ -69,7 +69,7 @@ export default function HomePage() {
             }}>
               Shop now, pay later with{' '}
               <span style={{
-                background: 'var(--primary-gradient)',
+                background: 'var(--primary)',
                 WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
               }}>{APP_NAME}</span>
             </h1>
@@ -78,7 +78,7 @@ export default function HomePage() {
               fontSize: 'var(--text-lg)', color: 'var(--gray-600)',
               maxWidth: '520px', marginBottom: '2rem', lineHeight: 1.7,
             }}>
-              Ride electric, pay smart. Get your dream e-bike today with flexible installment plans starting from {formatNaira(calculateEMI(300000, 15, 12))}/month.
+              The future is here. Get your dream e-bike today with flexible installment plans starting from {formatNaira(calculateEMI(300000, 15, 12))}/month.
             </p>
             <div className={`flex gap-4 flex-wrap justify-center hero-cta ${mounted ? 'animate-fade-in-up stagger-3' : ''}`} style={{ opacity: mounted ? 1 : 0 }}>
               <Link href="/bikes" className="btn btn-primary btn-lg">
@@ -92,10 +92,10 @@ export default function HomePage() {
             <div className={`flex items-center gap-6 flex-wrap justify-center ${mounted ? 'animate-fade-in-up stagger-4' : ''}`}
               style={{ opacity: mounted ? 1 : 0, marginTop: '3rem' }}>
               {[
-                { icon: '🔒', text: 'Secure Payments' },
-                { icon: '✅', text: 'KYC Verified' },
-                { icon: '🚚', text: 'Free Delivery' },
-                { icon: '🛡️', text: 'NDPR Compliant' },
+                { icon: <Lock size={18} />, text: 'Secure Payments' },
+                { icon: <CheckCircle size={18} />, text: 'KYC Verified' },
+                { icon: <Truck size={18} />, text: 'Free Delivery' },
+                { icon: <ShieldCheck size={18} color="var(--success)" />, text: 'NDPR Compliant' },
               ].map((badge, i) => (
                 <div key={i} className="flex items-center gap-2" style={{ fontSize: 'var(--text-sm)', color: 'var(--gray-600)' }}>
                   <span style={{ fontSize: '1.25rem' }}>{badge.icon}</span>
@@ -120,17 +120,17 @@ export default function HomePage() {
           </div>
           <div className="grid grid-4" style={{ gap: 'var(--space-6)' }}>
             {[
-              { step: '01', icon: '🔍', title: 'Choose Your Bike', desc: 'Browse our collection of premium electric bikes and find your perfect match.' },
-              { step: '02', icon: '📋', title: 'Apply for BNPL', desc: 'Complete a quick application with your personal information and KYC documents.' },
-              { step: '03', icon: '✅', title: 'Get Approved', desc: 'Our team reviews your application within 24 hours. Quick and hassle-free.' },
-              { step: '04', icon: '🏍️', title: 'Ride & Repay', desc: 'Receive your bike and pay in comfortable monthly installments.' },
+              { step: '01', icon: <Search size={32} />, title: 'Choose Your Bike', desc: 'Browse our collection of premium electric bikes and find your perfect match.' },
+              { step: '02', icon: <FileText size={32} />, title: 'Apply for BNPL', desc: 'Complete a quick application with your personal information and KYC documents.' },
+              { step: '03', icon: <CheckCircle size={32} />, title: 'Get Approved', desc: 'Our team reviews your application within 24 hours. Quick and hassle-free.' },
+              { step: '04', icon: <Bike size={32} />, title: 'Ride & Repay', desc: 'Receive your bike and pay in comfortable monthly installments.' },
             ].map((item, i) => (
               <div key={i} className="card" style={{
                 padding: 'var(--space-8)', textAlign: 'center', border: 'none',
                 background: i === 0 ? 'var(--cream)' : i === 1 ? 'var(--mint)' : i === 2 ? '#F0EBFF' : 'var(--gray-50)',
                 borderRadius: 'var(--radius-3xl)',
               }}>
-                <div style={{ fontSize: '2.5rem', marginBottom: 'var(--space-4)' }}>{item.icon}</div>
+                <div style={{ display: 'flex', justifyContent: 'center', color: 'var(--primary)', marginBottom: 'var(--space-4)' }}>{item.icon}</div>
                 <div style={{
                   fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--primary)',
                   letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 'var(--space-2)',
@@ -167,13 +167,11 @@ export default function HomePage() {
                 }}>
                   <div style={{
                     height: '220px',
-                    background: bike.category === 'Sports' ? 'linear-gradient(135deg, #1A1A2E, #2D0A4E)' :
-                      bike.category === 'Commuter' ? 'linear-gradient(135deg, #E8FFF5, #C5F5E0)' :
-                        'linear-gradient(135deg, #FFF5EB, #FFE8D6)',
+                    background: 'var(--gray-100)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '4rem', position: 'relative',
+                    position: 'relative', overflow: 'hidden',
                   }}>
-                    🏍️
+                    <img src={bike.images && bike.images[0] ? bike.images[0] : '/bikes/placeholder.jpg'} alt={bike.name} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '1rem' }} />
                     {bike.bnplEligible && (
                       <div style={{
                         position: 'absolute', top: '12px', right: '12px',
@@ -187,14 +185,14 @@ export default function HomePage() {
                     <div className="flex items-center justify-between" style={{ marginBottom: '0.25rem' }}>
                       <span style={{ fontSize: 'var(--text-xs)', color: 'var(--primary)', fontWeight: 600, textTransform: 'uppercase' }}>{bike.category}</span>
                       <span className="flex items-center gap-1" style={{ fontSize: 'var(--text-xs)', color: 'var(--gray-600)' }}>
-                        ⭐ {bike.rating}
+                        <Star size={14} style={{ fill: 'var(--warning)', color: 'var(--warning)' }} /> {bike.rating}
                       </span>
                     </div>
                     <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, marginBottom: '0.5rem' }}>{bike.name}</h3>
                     <div className="flex items-center gap-3 flex-wrap" style={{ marginBottom: '0.75rem' }}>
-                      <span className="flex items-center gap-1" style={{ fontSize: 'var(--text-xs)', color: 'var(--gray-500)' }}>⚡ {bike.motorPower}W</span>
-                      <span className="flex items-center gap-1" style={{ fontSize: 'var(--text-xs)', color: 'var(--gray-500)' }}>🔋 {bike.range}km</span>
-                      <span className="flex items-center gap-1" style={{ fontSize: 'var(--text-xs)', color: 'var(--gray-500)' }}>🏎️ {bike.topSpeed}km/h</span>
+                      <span className="flex items-center gap-1" style={{ fontSize: 'var(--text-xs)', color: 'var(--gray-500)' }}><Zap size={12} /> {bike.motorPower}W</span>
+                      <span className="flex items-center gap-1" style={{ fontSize: 'var(--text-xs)', color: 'var(--gray-500)' }}><Battery size={12} /> {bike.range}km</span>
+                      <span className="flex items-center gap-1" style={{ fontSize: 'var(--text-xs)', color: 'var(--gray-500)' }}><Gauge size={12} /> {bike.topSpeed}km/h</span>
                     </div>
                     <div style={{ borderTop: '1px solid var(--gray-200)', paddingTop: '0.75rem' }}>
                       <div style={{ fontSize: 'var(--text-xl)', fontWeight: 800, color: 'var(--primary)' }}>{formatNaira(bike.price)}</div>
@@ -216,7 +214,7 @@ export default function HomePage() {
       {/* ========== BNPL CTA ========== */}
       <section style={{
         padding: '80px 0',
-        background: 'var(--primary-gradient)',
+        background: 'var(--primary)',
         position: 'relative', overflow: 'hidden',
       }}>
         <div style={{

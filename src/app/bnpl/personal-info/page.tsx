@@ -1,8 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { APP_NAME, EMPLOYMENT_OPTIONS, NIGERIAN_STATES } from '@/lib/constants';
+import { AlertTriangle, BarChart3 } from 'lucide-react';
 
 const BNPL_STEPS = ['Personal Info', 'Identity (KYC)', 'Financial', 'Guarantor', 'Loan Terms', 'Submit'];
 
@@ -23,11 +25,25 @@ function Stepper({ current }: { current: number }) {
 }
 
 export default function PersonalInfoPage() {
+    const router = useRouter();
     const [form, setForm] = useState({
-        firstName: '', lastName: '', dateOfBirth: '', gender: '', address: '',
+        firstName: '', lastName: '', email: '', phone: '', dateOfBirth: '', gender: '', address: '',
         city: '', state: '', employmentStatus: '', monthlyIncome: '', employerName: '', employerAddress: '',
     });
+    
+    useEffect(() => {
+        const saved = sessionStorage.getItem('bnpl_data');
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                if (parsed.personalInfo) setForm(prev => ({ ...prev, ...parsed.personalInfo }));
+            } catch (e) {}
+        }
+    }, []);
+
     const u = (field: string, value: string) => setForm(prev => ({ ...prev, [field]: value }));
+
+    const isValid = form.firstName && form.lastName && form.email && form.phone && form.dateOfBirth && form.gender && form.address && form.city && form.state && form.employmentStatus && form.monthlyIncome;
 
     return (
         <div style={{ minHeight: '100vh', background: 'var(--gray-50)' }}>
@@ -47,7 +63,7 @@ export default function PersonalInfoPage() {
                 <div style={{ marginBottom: '1.5rem' }}>
                     <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: 800, marginBottom: '0.5rem' }}>Personal Information</h1>
                     <div className="alert alert-warning" style={{ fontSize: 'var(--text-xs)' }}>
-                        <span>⚠️</span>
+                        <span style={{ color: '#F39C12', display: 'flex' }}><AlertTriangle size={16} /></span>
                         <span>Please ensure the name matches your government-issued ID</span>
                     </div>
                 </div>
@@ -62,6 +78,16 @@ export default function PersonalInfoPage() {
                             <div className="form-group">
                                 <label className="form-label">Last Name</label>
                                 <input className="form-input" placeholder="Abubakr" value={form.lastName} onChange={e => u('lastName', e.target.value)} />
+                            </div>
+                        </div>
+                        <div className="grid grid-2" style={{ gap: '1rem' }}>
+                            <div className="form-group">
+                                <label className="form-label">Email Address</label>
+                                <input className="form-input" type="email" placeholder="you@ex.com" value={form.email} onChange={e => u('email', e.target.value)} />
+                            </div>
+                            <div className="form-group">
+                                <label className="form-label">Phone Number</label>
+                                <input className="form-input" type="tel" placeholder="080..." value={form.phone} onChange={e => u('phone', e.target.value)} />
                             </div>
                         </div>
                         <div className="grid grid-2" style={{ gap: '1rem' }}>
@@ -119,6 +145,8 @@ export default function PersonalInfoPage() {
                                     <option value="Bolt">Bolt</option>
                                     <option value="Chowdeck">Chowdeck</option>
                                     <option value="Glovo">Glovo</option>
+                                    <option value="Indrive">Indrive</option>
+                                    <option value="Waysdrop">Waysdrop</option>
                                     <option value="Other">Other</option>
                                 </select>
                             </div>
@@ -128,11 +156,11 @@ export default function PersonalInfoPage() {
                             </div>
                         </div>
 
-                        {(['Bolt', 'Chowdeck', 'Glovo'].includes(form.employerName)) && (
+                        {(['Bolt', 'Chowdeck', 'Glovo', 'Indrive', 'Waysdrop'].includes(form.employerName)) && (
                             <div className="form-group animate-fade-in-up">
                                 <label className="form-label">Upload {form.employerName} Account Dashboard</label>
                                 <div style={{ border: '2px dashed var(--gray-300)', padding: '1.5rem', borderRadius: 'var(--radius-lg)', textAlign: 'center', cursor: 'pointer', background: 'var(--gray-50)' }}>
-                                    <span style={{ fontSize: '1.5rem', display: 'block', marginBottom: '0.5rem' }}>📊</span>
+                                    <span style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.5rem', color: 'var(--primary)' }}><BarChart3 size={32} /></span>
                                     <span style={{ fontSize: 'var(--text-sm)', color: 'var(--gray-600)', fontWeight: 500 }}>Click to upload screenshot of your dashboard</span>
                                     <div style={{ fontSize: 'var(--text-xs)', color: 'var(--gray-400)', marginTop: '0.25rem' }}>Showing total rides/earnings</div>
                                 </div>
@@ -143,7 +171,11 @@ export default function PersonalInfoPage() {
 
                 <div className="flex justify-between" style={{ marginTop: '1.5rem' }}>
                     <Link href="/bikes" className="btn btn-ghost">Cancel</Link>
-                    <Link href="/bnpl/kyc" className="btn btn-primary">Continue →</Link>
+                    <button onClick={() => {
+                        const saved = JSON.parse(sessionStorage.getItem('bnpl_data') || '{}');
+                        sessionStorage.setItem('bnpl_data', JSON.stringify({ ...saved, personalInfo: form }));
+                        router.push('/bnpl/kyc');
+                    }} className={`btn btn-primary ${!isValid ? 'disabled' : ''}`} style={{ opacity: isValid ? 1 : 0.5, pointerEvents: isValid ? 'auto' : 'none' }}>Continue →</button>
                 </div>
             </div>
         </div>

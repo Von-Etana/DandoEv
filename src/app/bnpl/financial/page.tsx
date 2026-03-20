@@ -1,8 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { NIGERIAN_BANKS } from '@/lib/constants';
+import { Info, FileText, Building } from 'lucide-react';
 
 const BNPL_STEPS = ['Personal Info', 'Identity (KYC)', 'Financial', 'Guarantor', 'Loan Terms', 'Submit'];
 function Stepper({ current }: { current: number }) {
@@ -22,8 +24,23 @@ function Stepper({ current }: { current: number }) {
 }
 
 export default function FinancialInfoPage() {
+    const router = useRouter();
     const [form, setForm] = useState({ bankName: '', accountNumber: '', accountName: '', mandateAccepted: false });
     const [incomeVerified, setIncomeVerified] = useState(false);
+    
+    useEffect(() => {
+        const saved = sessionStorage.getItem('bnpl_data');
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                if (parsed.financial) {
+                    setForm(prev => ({ ...prev, ...parsed.financial }));
+                    setIncomeVerified(parsed.financial.incomeVerified || false);
+                }
+            } catch (e) {}
+        }
+    }, []);
+
     const u = (field: string, value: string | boolean) => setForm(prev => ({ ...prev, [field]: value }));
 
     return (
@@ -73,7 +90,7 @@ export default function FinancialInfoPage() {
                     </p>
                     <div style={{ background: 'var(--info-bg)', padding: '1rem', borderRadius: 'var(--radius-xl)', marginBottom: '1rem' }}>
                         <div className="flex items-start gap-3">
-                            <span>ℹ️</span>
+                            <span style={{ color: '#2471A3', display: 'flex' }}><Info size={18} /></span>
                             <div style={{ fontSize: 'var(--text-xs)', color: '#2471A3', lineHeight: 1.6 }}>
                                 <strong>Mandate Details:</strong> Debit will happen on the due date of each installment.
                                 You&apos;ll be notified 3 days before each debit. You can cancel the mandate at any time (note: this may affect your BNPL terms).
@@ -100,11 +117,11 @@ export default function FinancialInfoPage() {
                         Upload a bank statement or connect via Open Banking to verify your income. This is mandatory for approval.
                     </p>
                     <div className="flex gap-3">
-                        <button onClick={() => setIncomeVerified(true)} className={`btn btn-sm flex-1 ${incomeVerified ? 'btn-success' : 'btn-outline'}`} style={{ fontSize: 'var(--text-xs)' }}>
-                            {incomeVerified ? '📄 Statement Uploaded' : '📄 Upload Statement'}
+                        <button onClick={() => setIncomeVerified(true)} className={`btn btn-sm flex-1 ${incomeVerified ? 'btn-success' : 'btn-outline'}`} style={{ fontSize: 'var(--text-xs)', display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}>
+                            <FileText size={14} /> {incomeVerified ? 'Statement Uploaded' : 'Upload Statement'}
                         </button>
-                        <button onClick={() => setIncomeVerified(true)} className={`btn btn-sm flex-1 ${incomeVerified ? 'btn-success' : 'btn-outline'}`} style={{ fontSize: 'var(--text-xs)' }}>
-                            {incomeVerified ? '🏦 Bank Connected' : '🏦 Connect Bank'}
+                        <button onClick={() => setIncomeVerified(true)} className={`btn btn-sm flex-1 ${incomeVerified ? 'btn-success' : 'btn-outline'}`} style={{ fontSize: 'var(--text-xs)', display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}>
+                            <Building size={14} /> {incomeVerified ? 'Bank Connected' : 'Connect Bank'}
                         </button>
                     </div>
                 </div>
@@ -114,7 +131,9 @@ export default function FinancialInfoPage() {
                     <button
                         onClick={() => {
                             if (incomeVerified) {
-                                window.location.href = '/bnpl/guarantor';
+                                const saved = JSON.parse(sessionStorage.getItem('bnpl_data') || '{}');
+                                sessionStorage.setItem('bnpl_data', JSON.stringify({ ...saved, financial: { ...form, incomeVerified } }));
+                                router.push('/bnpl/guarantor');
                             } else {
                                 alert('Please complete income verification to continue.');
                             }

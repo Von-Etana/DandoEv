@@ -2,9 +2,11 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { formatNaira, calculateInstallment, calculateDownPayment } from '@/lib/utils';
-import { BNPL_CONFIG } from '@/lib/constants';
+import { useRouter } from 'next/navigation';
+import { formatNaira, calculateInstallment } from '@/lib/utils';
+import { BNPL_CONFIG, NIGERIAN_STATES } from '@/lib/constants';
 import { mockBikes } from '@/lib/mock-data';
+import { Bike, AlertTriangle } from 'lucide-react';
 
 const BNPL_STEPS = ['Personal Info', 'Identity (KYC)', 'Financial', 'Guarantor', 'Loan Terms', 'Submit'];
 function Stepper({ current }: { current: number }) {
@@ -24,14 +26,27 @@ function Stepper({ current }: { current: number }) {
 }
 
 export default function LoanTermsPage() {
+    const router = useRouter();
     const bike = mockBikes[0];
     const [selectedTenure, setSelectedTenure] = useState(BNPL_CONFIG.defaultTenure);
     const [accepted, setAccepted] = useState(false);
+    const [loading, setLoading] = useState(false);
+    
+    // Delivery State
+    const [deliveryType, setDeliveryType] = useState<'pickup' | 'home'>('home');
+    const [deliveryState, setDeliveryState] = useState('');
+    const [deliveryAddress, setDeliveryAddress] = useState('');
 
     const downPayment = 0; // No down payment
     const loanAmount = bike.price;
-    const { installmentAmount, totalRepayable, totalInterest, numberOfInstallments, insuranceFee, totalSavings } = calculateInstallment(loanAmount, BNPL_CONFIG.interestRate, selectedTenure);
+    const { installmentAmount, totalRepayable, totalInterest, numberOfInstallments, healthInsuranceFee, totalSavings } = calculateInstallment(loanAmount, BNPL_CONFIG.interestRate, selectedTenure);
 
+    // Compute Delivery Fee Based on State
+    const deliveryFee = deliveryType === 'pickup' ? 0 : (deliveryState === 'Lagos' ? 10000 : (deliveryState ? 20000 : 0));
+    
+    // Add delivery to the total capitalized loan
+    const totalRepayableWithDelivery = totalRepayable + deliveryFee;
+    const installmentAmountWithDelivery = totalRepayableWithDelivery / numberOfInstallments;
 
     return (
         <div style={{ minHeight: '100vh', background: 'var(--gray-50)' }}>
@@ -54,15 +69,46 @@ export default function LoanTermsPage() {
                     <div className="flex items-center gap-4">
                         <div style={{
                             width: '64px', height: '64px', borderRadius: 'var(--radius-xl)',
-                            background: 'linear-gradient(135deg, #F0EBFF, #E8FFF5)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem',
-                        }}>🏍️</div>
+                            background: 'var(--gray-100)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}><Bike size={32} color="var(--primary)" /></div>
                         <div style={{ flex: 1 }}>
                             <div style={{ fontWeight: 700 }}>{bike.name}</div>
                             <div style={{ fontSize: 'var(--text-sm)', color: 'var(--gray-500)' }}>{bike.category} • {bike.brand}</div>
                         </div>
                         <div style={{ fontWeight: 800, color: 'var(--primary)', fontSize: 'var(--text-lg)' }}>{formatNaira(bike.price)}</div>
                     </div>
+                </div>
+
+                {/* Delivery Options */}
+                <div className="card card-elevated" style={{ padding: 'var(--space-6)', borderRadius: 'var(--radius-2xl)', marginBottom: '1rem' }}>
+                    <h3 style={{ fontWeight: 700, marginBottom: '1rem' }}>Logistics & Delivery</h3>
+                    <div className="flex gap-4" style={{ marginBottom: '1rem' }}>
+                        <label style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                            <input type="radio" checked={deliveryType === 'home'} onChange={() => setDeliveryType('home')} /> 
+                            <span style={{ fontWeight: 600 }}>Home Delivery</span>
+                        </label>
+                        <label style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                            <input type="radio" checked={deliveryType === 'pickup'} onChange={() => setDeliveryType('pickup')} /> 
+                            <span style={{ fontWeight: 600 }}>Pick Up from Hub (Free)</span>
+                        </label>
+                    </div>
+
+                    {deliveryType === 'home' && (
+                        <div className="animate-fade-in-up flex flex-col gap-4">
+                            <div className="form-group">
+                                <label className="form-label">Delivery Address</label>
+                                <input className="form-input" placeholder="Full street address" value={deliveryAddress} onChange={e => setDeliveryAddress(e.target.value)} />
+                            </div>
+                            <div className="form-group">
+                                <label className="form-label">Destination State</label>
+                                <select className="form-select" value={deliveryState} onChange={e => setDeliveryState(e.target.value)}>
+                                    <option value="">Select state to calculate delivery</option>
+                                    {NIGERIAN_STATES.map(s => <option key={s}>{s}</option>)}
+                                </select>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Tenure Selection */}
@@ -96,9 +142,10 @@ export default function LoanTermsPage() {
                             { label: `No Down Payment`, value: formatNaira(0) },
                             { label: 'Loan Amount', value: formatNaira(loanAmount) },
                             { label: `Monthly Interest (${BNPL_CONFIG.interestRate}%)`, value: formatNaira(totalInterest) },
-                            { label: `Insurance Fee (${BNPL_CONFIG.insuranceFeePercent}%)`, value: formatNaira(insuranceFee || 0) }, // fallback if undefined in first render
+                            { label: `Health Insurance Fee (Fixed)`, value: formatNaira(healthInsuranceFee || 0) },
                             { label: `Processing Fee (Fixed)`, value: formatNaira(BNPL_CONFIG.processingFee) },
                             { label: `Compulsory Savings (₦${BNPL_CONFIG.dailySavings}/day)`, value: formatNaira(totalSavings || 0) },
+                            { label: `Delivery Fee ${deliveryType === 'pickup' ? '(Pick Up)' : (deliveryState ? `(${deliveryState})` : '')}`, value: deliveryFee === 0 ? 'Free' : formatNaira(deliveryFee) },
                         ].map(r => (
                             <div key={r.label} className="flex justify-between" style={{ fontSize: 'var(--text-sm)' }}>
                                 <span style={{ color: 'var(--gray-600)' }}>{r.label}</span>
@@ -107,20 +154,20 @@ export default function LoanTermsPage() {
                         ))}
                         <div style={{ borderTop: '2px solid var(--gray-200)', paddingTop: '0.75rem', marginTop: '0.25rem' }}>
                             <div className="flex justify-between" style={{ marginBottom: '0.5rem' }}>
-                                <span style={{ fontWeight: 700 }}>Total Repayable (inc. Savings)</span>
-                                <span style={{ fontWeight: 800, color: 'var(--primary)', fontSize: 'var(--text-lg)' }}>{formatNaira(totalRepayable)}</span>
+                                <span style={{ fontWeight: 700 }}>Total Repayable (inc. Savings & Delivery)</span>
+                                <span style={{ fontWeight: 800, color: 'var(--primary)', fontSize: 'var(--text-lg)' }}>{formatNaira(totalRepayableWithDelivery)}</span>
                             </div>
                             <div className="flex justify-between">
                                 <span style={{ fontWeight: 700, color: 'var(--accent-dark)' }}>Bi-daily Payment (Every 2 days)</span>
-                                <span style={{ fontWeight: 800, color: 'var(--accent-dark)', fontSize: 'var(--text-xl)' }}>{formatNaira(installmentAmount)}</span>
+                                <span style={{ fontWeight: 800, color: 'var(--accent-dark)', fontSize: 'var(--text-xl)' }}>{formatNaira(installmentAmountWithDelivery)}</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Late Fee Notice */}
-                <div className="alert alert-warning" style={{ marginBottom: '1rem' }}>
-                    <span>⚠️</span>
+                <div className="alert alert-warning" style={{ marginBottom: '1rem', display: 'flex', gap: '0.75rem' }}>
+                    <span style={{ display: 'flex', color: '#F39C12' }}><AlertTriangle size={18} /></span>
                     <div style={{ fontSize: 'var(--text-xs)' }}>
                         <strong>Late Fee Policy:</strong> A {BNPL_CONFIG.lateFeePercent}% late fee will be applied on overdue installments after a {BNPL_CONFIG.gracePeriodDays}-day grace period.
                     </div>
@@ -153,10 +200,27 @@ export default function LoanTermsPage() {
 
                 <div className="flex justify-between" style={{ marginTop: '1.5rem' }}>
                     <Link href="/bnpl/guarantor" className="btn btn-ghost">← Back</Link>
-                    <Link href="/bnpl/submit" className={`btn btn-primary ${!accepted ? 'disabled' : ''}`}
-                        style={{ pointerEvents: accepted ? 'auto' : 'none', opacity: accepted ? 1 : 0.5 }}>
-                        Submit Application →
-                    </Link>
+                    <button 
+                        onClick={async () => {
+                            if (!accepted || (deliveryType === 'home' && (!deliveryState || !deliveryAddress))) return;
+                            setLoading(true);
+                            try {
+                                const saved = JSON.parse(sessionStorage.getItem('bnpl_data') || '{}');
+                                const payload = { bikeId: bike.id, bikeName: bike.name, bikeImage: bike.images[0], totalAmount: totalRepayableWithDelivery, tenure: selectedTenure, deliveryType, deliveryState, deliveryAddress, ...saved };
+                                const res = await fetch('/api/loans', { method: 'POST', body: JSON.stringify(payload) });
+                                if (res.ok) {
+                                    sessionStorage.removeItem('bnpl_data');
+                                    router.push('/bnpl/submit');
+                                } else {
+                                    alert('Failed to submit application.');
+                                }
+                            } catch (e) { alert('Network error.'); }
+                            finally { setLoading(false); }
+                        }}
+                        className={`btn btn-primary ${(!accepted || (deliveryType === 'home' && (!deliveryState || !deliveryAddress)) || loading) ? 'disabled' : ''}`}
+                        style={{ pointerEvents: (accepted && (deliveryType === 'pickup' || (deliveryState && deliveryAddress)) && !loading) ? 'auto' : 'none', opacity: (accepted && (deliveryType === 'pickup' || (deliveryState && deliveryAddress))) ? 1 : 0.5 }}>
+                        {loading ? 'Submitting...' : 'Submit Application →'}
+                    </button>
                 </div>
             </div>
         </div>

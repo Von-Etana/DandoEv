@@ -3,25 +3,70 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { APP_NAME } from '@/lib/constants';
+import { Bike, Eye, EyeOff, Smartphone } from 'lucide-react';
+
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function SignUpPage() {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const redirectTo = searchParams.get('redirect') || '/dashboard';
+
     const [step, setStep] = useState(1);
-    const [form, setForm] = useState({ email: '', phone: '', password: '', confirmPassword: '', otp: '' });
+    const [form, setForm] = useState({ firstName: '', lastName: '', email: '', phone: '', password: '', confirmPassword: '', otp: '' });
     const [showPassword, setShowPassword] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
 
     const updateForm = (field: string, value: string) => setForm(prev => ({ ...prev, [field]: value }));
+
+    const handleSubmit = async (e?: React.FormEvent) => {
+        if (e) e.preventDefault();
+        setLoading(true);
+        setError('');
+
+        if (form.password !== form.confirmPassword) {
+            setError('Passwords do not match');
+            setLoading(false);
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/auth/signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    firstName: form.firstName,
+                    lastName: form.lastName,
+                    email: form.email,
+                    phone: form.phone,
+                    password: form.password,
+                }),
+            });
+
+            if (res.ok) {
+                router.push(redirectTo);
+            } else {
+                const data = await res.json();
+                setError(data.error || 'Registration failed');
+            }
+        } catch (err) {
+            setError('Network error. Please try again.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <div style={{
             minHeight: '100vh',
-            background: 'linear-gradient(135deg, var(--cream) 0%, #FFE8D6 50%, var(--mint) 100%)',
+            background: 'var(--gray-50)',
             display: 'flex', flexDirection: 'column',
         }}>
             {/* Top bar */}
             <div style={{ padding: '1rem' }}>
                 <Link href="/" className="flex items-center gap-2" style={{ display: 'inline-flex' }}>
-                    <span style={{ fontSize: '1.5rem' }}>⚡</span>
-                    <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.25rem', color: 'var(--primary)' }}>{APP_NAME}</span>
+                    <img src="/logo.png" alt={APP_NAME} style={{ height: '32px', width: 'auto' }} />
                 </Link>
             </div>
 
@@ -31,16 +76,34 @@ export default function SignUpPage() {
                         <>
                             {/* Main Card */}
                             <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-                                <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🏍️</div>
+                                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem', color: 'var(--primary)' }}><Bike size={48} /></div>
                                 <h1 style={{ fontSize: 'var(--text-3xl)', fontWeight: 800, marginBottom: '0.5rem' }}>Create Account</h1>
                                 <p style={{ color: 'var(--gray-600)' }}>Join {APP_NAME} and ride electric today</p>
                             </div>
 
                             <div className="card card-elevated" style={{ padding: 'var(--space-8)', borderRadius: 'var(--radius-2xl)' }}>
+                                {error && (
+                                    <div style={{ padding: '0.75rem', background: '#FEE2E2', color: '#B91C1C', borderRadius: 'var(--radius-lg)', fontSize: 'var(--text-sm)', marginBottom: '1rem' }}>
+                                        {error}
+                                    </div>
+                                )}
+
                                 <div className="flex flex-col gap-4">
+                                    <div className="grid grid-2" style={{ gap: '1rem' }}>
+                                        <div className="form-group">
+                                            <label className="form-label">First Name</label>
+                                            <input className="form-input" required placeholder="John"
+                                                value={form.firstName} onChange={e => updateForm('firstName', e.target.value)} />
+                                        </div>
+                                        <div className="form-group">
+                                            <label className="form-label">Last Name</label>
+                                            <input className="form-input" required placeholder="Doe"
+                                                value={form.lastName} onChange={e => updateForm('lastName', e.target.value)} />
+                                        </div>
+                                    </div>
                                     <div className="form-group">
                                         <label className="form-label">Email Address</label>
-                                        <input className="form-input" type="email" placeholder="you@example.com"
+                                        <input className="form-input" type="email" required placeholder="you@example.com"
                                             value={form.email} onChange={e => updateForm('email', e.target.value)} />
                                     </div>
                                     <div className="form-group">
@@ -60,7 +123,7 @@ export default function SignUpPage() {
                                             <button onClick={() => setShowPassword(!showPassword)} style={{
                                                 position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)',
                                                 color: 'var(--gray-500)', fontSize: 'var(--text-sm)', cursor: 'pointer',
-                                            }}>{showPassword ? '🙈' : '👁️'}</button>
+                                            }}>{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button>
                                         </div>
                                     </div>
                                     <div className="form-group">
@@ -83,7 +146,7 @@ export default function SignUpPage() {
                         <>
                             {/* OTP Step */}
                             <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-                                <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📱</div>
+                                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem', color: 'var(--primary)' }}><Smartphone size={48} /></div>
                                 <h1 style={{ fontSize: 'var(--text-3xl)', fontWeight: 800, marginBottom: '0.5rem' }}>Verify Your Number</h1>
                                 <p style={{ color: 'var(--gray-600)' }}>We sent a 6-digit code to +234{form.phone}</p>
                             </div>
@@ -96,13 +159,14 @@ export default function SignUpPage() {
                                             style={{ textAlign: 'center', fontSize: 'var(--text-2xl)', letterSpacing: '0.5em', fontWeight: 700 }}
                                             value={form.otp} onChange={e => updateForm('otp', e.target.value.replace(/\D/g, ''))} />
                                     </div>
-                                    <Link href="/dashboard" className="btn btn-primary btn-full btn-lg">
-                                        Verify & Create Account
-                                    </Link>
+                                    <button onClick={() => handleSubmit()} className="btn btn-primary btn-full btn-lg" disabled={loading}>
+                                        {loading ? 'Processing...' : 'Verify & Create Account'}
+                                    </button>
+                                    
                                     <div className="text-center">
                                         <button className="btn btn-ghost btn-sm" style={{ color: 'var(--primary)' }}>Resend Code</button>
                                     </div>
-                                    <button className="btn btn-ghost btn-sm" onClick={() => setStep(1)}>← Back</button>
+                                    <button className="btn btn-ghost btn-sm" onClick={() => setStep(1)} disabled={loading}>← Back</button>
                                 </div>
                             </div>
                         </>

@@ -1,8 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { RELATIONSHIP_TYPES } from '@/lib/constants';
+import { CheckCircle2, Info } from 'lucide-react';
 
 const BNPL_STEPS = ['Personal Info', 'Identity (KYC)', 'Financial', 'Guarantor', 'Loan Terms', 'Submit'];
 function Stepper({ current }: { current: number }) {
@@ -22,10 +24,23 @@ function Stepper({ current }: { current: number }) {
 }
 
 export default function GuarantorPage() {
+    const router = useRouter();
     const [guarantors, setGuarantors] = useState([
         { fullName: '', email: '', phone: '', relationship: '', invited: false },
         { fullName: '', email: '', phone: '', relationship: '', invited: false }
     ]);
+
+    useEffect(() => {
+        const saved = sessionStorage.getItem('bnpl_data');
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                if (parsed.guarantors && Array.isArray(parsed.guarantors)) {
+                    setGuarantors(parsed.guarantors);
+                }
+            } catch (e) {}
+        }
+    }, []);
 
     const updateGuarantor = (index: number, field: string, value: string | boolean) => {
         setGuarantors(prev => {
@@ -93,8 +108,8 @@ export default function GuarantorPage() {
                 ))}
 
                 {(guarantors[0].invited || guarantors[1].invited) && (
-                    <div className="alert alert-success animate-fade-in-up" style={{ marginBottom: '1rem' }}>
-                        <span>✅</span>
+                    <div className="alert alert-success animate-fade-in-up" style={{ marginBottom: '1rem', display: 'flex', gap: '0.75rem' }}>
+                        <span style={{ display: 'flex', color: 'var(--success)' }}><CheckCircle2 size={18} /></span>
                         <div>
                             <strong>{guarantors[0].invited && guarantors[1].invited ? 'Invites sent successfully!' : 'Invite sent successfully!'}</strong>
                             <p style={{ fontSize: 'var(--text-xs)', marginTop: '0.25rem' }}>Your guarantor{guarantors[0].invited && guarantors[1].invited ? 's' : ''} will receive an email and SMS with instructions to verify their identity.</p>
@@ -103,7 +118,9 @@ export default function GuarantorPage() {
                 )}
 
                 <div className="card" style={{ padding: 'var(--space-5)', borderRadius: 'var(--radius-xl)', background: 'var(--warning-bg)', border: '1px solid #F9E79F' }}>
-                    <h4 style={{ fontWeight: 700, fontSize: 'var(--text-sm)', marginBottom: '0.5rem' }}>ℹ️ Guarantor Requirements</h4>
+                    <h4 style={{ fontWeight: 700, fontSize: 'var(--text-sm)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <Info size={16} color="#D68910" /> Guarantor Requirements
+                    </h4>
                     <ul style={{ fontSize: 'var(--text-xs)', color: 'var(--gray-700)', lineHeight: 1.8, listStyle: 'disc', paddingLeft: '1.25rem' }}>
                         <li>Must be a Nigerian resident aged 21 or above</li>
                         <li>Must have a valid government-issued ID and BVN</li>
@@ -115,7 +132,11 @@ export default function GuarantorPage() {
 
                 <div className="flex justify-between" style={{ marginTop: '1.5rem' }}>
                     <Link href="/bnpl/financial" className="btn btn-ghost">← Back</Link>
-                    <Link href="/bnpl/loan-terms" className="btn btn-primary">Continue →</Link>
+                    <button onClick={() => {
+                        const saved = JSON.parse(sessionStorage.getItem('bnpl_data') || '{}');
+                        sessionStorage.setItem('bnpl_data', JSON.stringify({ ...saved, guarantors }));
+                        router.push('/bnpl/loan-terms');
+                    }} className={`btn btn-primary ${(!guarantors[0].invited || !guarantors[1].invited) ? 'disabled' : ''}`} style={{ opacity: (guarantors[0].invited && guarantors[1].invited) ? 1 : 0.5, pointerEvents: (guarantors[0].invited && guarantors[1].invited) ? 'auto' : 'none' }}>Continue →</button>
                 </div>
             </div>
         </div>

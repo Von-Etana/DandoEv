@@ -20,8 +20,7 @@ export default function CustomerDashboard() {
             <nav style={{ background: 'var(--white)', borderBottom: '1px solid var(--gray-200)', padding: '0.75rem 0' }}>
                 <div className="container flex items-center justify-between">
                     <Link href="/" className="flex items-center gap-2">
-                        <Zap size={24} color="var(--accent-dark)" />
-                        <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.25rem', color: 'var(--primary)' }}>{APP_NAME}</span>
+                        <img src="/logo.png" alt={APP_NAME} style={{ height: '40px', width: 'auto' }} />
                     </Link>
                     <div className="flex items-center gap-3">
                         <Link href="/bikes" className="btn btn-ghost btn-sm">Browse Bikes</Link>
@@ -69,7 +68,7 @@ export default function CustomerDashboard() {
                                     <span className={`badge ${getStatusColor(activeLoan.status)}`}>{capitalize(activeLoan.status)}</span>
                                 </div>
                                 <div className="flex items-center gap-4" style={{ marginBottom: '1rem' }}>
-                                    <div style={{ width: '56px', height: '56px', borderRadius: 'var(--radius-xl)', background: 'linear-gradient(135deg, #F0EBFF, #E8FFF5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.75rem' }}>🏍️</div>
+                                    <div style={{ width: '56px', height: '56px', borderRadius: 'var(--radius-xl)', background: 'var(--gray-100)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Bike size={24} color="var(--primary)" /></div>
                                     <div style={{ flex: 1 }}>
                                         <div style={{ fontWeight: 700 }}>{activeLoan.bikeName}</div>
                                         <div style={{ fontSize: 'var(--text-sm)', color: 'var(--gray-500)' }}>{activeLoan.tenure} months tenure</div>
@@ -149,6 +148,30 @@ export default function CustomerDashboard() {
                             </div>
                         )}
 
+                        {/* Compulsory Savings Digital Card */}
+                        <div style={{
+                            padding: 'var(--space-6)', borderRadius: 'var(--radius-3xl)', marginBottom: '1rem',
+                            background: 'var(--dark-light)', color: 'var(--white)',
+                            boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                            position: 'relative', overflow: 'hidden'
+                        }}>
+                            <div style={{ position: 'absolute', top: -20, right: -20, width: '120px', height: '120px', background: 'var(--accent)', opacity: 0.1, borderRadius: '50%' }} />
+                            <div style={{ position: 'absolute', bottom: -40, left: -40, width: '140px', height: '140px', background: 'var(--primary)', opacity: 0.15, borderRadius: '50%' }} />
+                            
+                            <div className="flex justify-between items-center" style={{ marginBottom: '1.5rem' }}>
+                                <span style={{ fontSize: 'var(--text-xs)', opacity: 0.8, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Daily Compulsory Savings</span>
+                                <Wallet size={20} color="var(--accent)" />
+                            </div>
+                            
+                            <div style={{ fontSize: 'var(--text-xs)', opacity: 0.6, marginBottom: '0.25rem' }}>Current Balance</div>
+                            <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 800, marginBottom: '1.5rem', fontFamily: 'Inter' }}>{formatNaira(15000)}</div>
+                            
+                            <div className="flex items-center gap-2" style={{ fontSize: 'var(--text-xs)', background: 'rgba(255,255,255,0.05)', padding: '0.5rem', borderRadius: 'var(--radius-md)', opacity: 0.9 }}>
+                                <Zap size={14} color="var(--accent)" />
+                                <span>Saving <strong>{formatNaira(1000)}</strong> per day automatically</span>
+                            </div>
+                        </div>
+
                         {/* Quick Actions */}
                         <div className="card card-elevated" style={{ padding: 'var(--space-5)', borderRadius: 'var(--radius-2xl)', marginBottom: '1rem' }}>
                             <h3 style={{ fontWeight: 700, marginBottom: '0.75rem', fontSize: 'var(--text-sm)' }}>Quick Actions</h3>
@@ -177,7 +200,7 @@ export default function CustomerDashboard() {
                             <div className="card card-elevated" style={{ padding: 'var(--space-5)', borderRadius: 'var(--radius-2xl)' }}>
                                 <h3 style={{ fontWeight: 700, marginBottom: '0.75rem', fontSize: 'var(--text-sm)' }}>Recent Order</h3>
                                 <div className="flex items-center gap-3">
-                                    <div style={{ width: '40px', height: '40px', borderRadius: 'var(--radius-lg)', background: 'var(--mint)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem' }}>🏍️</div>
+                                    <div style={{ width: '40px', height: '40px', borderRadius: 'var(--radius-lg)', background: 'var(--mint)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Bike size={18} color="var(--accent-dark)" /></div>
                                     <div style={{ flex: 1 }}>
                                         <div style={{ fontWeight: 600, fontSize: 'var(--text-sm)' }}>{recentOrder.bikeName}</div>
                                         <span className={`badge ${getStatusColor(recentOrder.status)}`}>{capitalize(recentOrder.status)}</span>

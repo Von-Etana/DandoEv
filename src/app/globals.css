@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 /* ============================================================
    DandoEv E-Bike BNPL - Design System
@@ -6,10 +6,10 @@
 
 :root {
   /* Primary Palette */
-  --primary: #2D0A4E;
-  --primary-light: #4A1A6B;
-  --primary-dark: #1A0630;
-  --primary-gradient: linear-gradient(135deg, #2D0A4E 0%, #5B2D8E 100%);
+  --primary: #2E3192;
+  --primary-light: #3E43B3;
+  --primary-dark: #1A1D5A;
+  --primary-gradient: var(--primary);
 
   /* Accent Colors */
   --accent: #4AEAAF;
@@ -52,7 +52,7 @@
   --info-bg: #EBF5FB;
 
   /* Typography */
-  --font-display: 'Outfit', sans-serif;
+  --font-display: 'Inter', sans-serif;
   --font-body: 'Inter', sans-serif;
 
   /* Font Sizes */
@@ -89,12 +89,12 @@
   --radius-full: 9999px;
 
   /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
-  --shadow-glow: 0 0 20px rgba(74, 234, 175, 0.3);
-  --shadow-primary: 0 4px 14px rgba(45, 10, 78, 0.25);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 4px 6px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 10px 15px rgba(0, 0, 0, 0.05);
+  --shadow-glow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  --shadow-primary: 0 4px 6px rgba(46, 49, 146, 0.15);
 
   /* Transitions */
   --transition-fast: 150ms ease;
