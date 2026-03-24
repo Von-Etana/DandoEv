@@ -146,11 +146,26 @@ export default function KYCPage() {
 
                 <div className="flex justify-between" style={{ marginTop: '1.5rem' }}>
                     <Link href="/bnpl/personal-info" className="btn btn-ghost">← Back</Link>
-                    <button onClick={() => {
-                        const saved = JSON.parse(sessionStorage.getItem('bnpl_data') || '{}');
-                        sessionStorage.setItem('bnpl_data', JSON.stringify({ ...saved, kyc: { selectedDocType, bvn, selfieUploaded, docUploaded } }));
-                        router.push('/bnpl/financial');
-                    }} className={`btn btn-primary ${(!docUploaded || !selfieUploaded) ? 'disabled' : ''}`} style={{ opacity: (docUploaded && selfieUploaded) ? 1 : 0.5, pointerEvents: (docUploaded && selfieUploaded) ? 'auto' : 'none' }}>Continue →</button>
+                    <button 
+                        onClick={async () => {
+                            const saved = JSON.parse(sessionStorage.getItem('bnpl_data') || '{}');
+                            sessionStorage.setItem('bnpl_data', JSON.stringify({ ...saved, kyc: { selectedDocType, bvn, selfieUploaded, docUploaded } }));
+                            
+                            try {
+                                const token = document.cookie.split('token=')[1]?.split(';')[0];
+                                await fetch('/api/kyc/initiate', {
+                                    method: 'POST',
+                                    headers: { 'Authorization': `Bearer ${token}` }
+                                });
+                                // We proceed regardless if mock fails or succeeds for UX flow
+                            } catch (e) {}
+
+                            router.push('/bnpl/financial');
+                        }} 
+                        className={`btn btn-primary ${(!docUploaded || !selfieUploaded) ? 'disabled' : ''}`} 
+                        style={{ opacity: (docUploaded && selfieUploaded) ? 1 : 0.5, pointerEvents: (docUploaded && selfieUploaded) ? 'auto' : 'none' }}>
+                        Continue →
+                    </button>
                 </div>
             </div>
         </div>

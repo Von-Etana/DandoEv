@@ -168,6 +168,7 @@ model User {
   dailySavings      DailySaving[]
   idempotencyKeys   IdempotencyKey[]
   guarantorsCreated Guarantor[]    @relation("ApplicantGuarantors")
+  wallet            Wallet?
 
   @@index([email])
   @@index([role])
@@ -480,4 +481,43 @@ model DailySaving {
   @@index([userId])
   @@index([loanId])
   @@map("daily_savings")
+}
+
+// ---- Ledger & Wallet ----
+
+model Wallet {
+  id           String   @id @default(uuid())
+  userId       String   @unique
+  mainBalance  Decimal  @default(0) @db.Decimal(15, 2)
+  lockedSaving Decimal  @default(0) @db.Decimal(15, 2)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("wallets")
+}
+
+model LedgerEntry {
+  id        String   @id @default(uuid())
+  groupId   String   // joins debit & credit events
+  account   String   // 'wallet_main', 'wallet_locked', 'platform_revenue', etc.
+  debit     Decimal  @default(0) @db.Decimal(15, 2)
+  credit    Decimal  @default(0) @db.Decimal(15, 2)
+  reference String   // txId, repaymentId, etc.
+  details   String?
+  createdAt DateTime @default(now())
+
+  @@index([groupId])
+  @@index([account])
+  @@map("ledger_entries")
+}
+
+model SystemConfig {
+  id        String   @id @default(uuid())
+  key       String   @unique // 'savings_percentage', 'max_loan_limit', etc.
+  value     String
+  updatedAt DateTime @updatedAt
+
+  @@map("system_configs")
 }

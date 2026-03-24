@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 
-const API_URL = 'http://localhost:3000/api/auth/signin';
+import { Platform } from 'react-native';
 
-export default function SignInScreen({ navigateTo }: { navigateTo: (screen: string) => void }) {
+const API_BASE = Platform.OS === 'android' ? 'http://10.0.2.2:3000' : 'http://localhost:3000';
+const API_URL = `${API_BASE}/api/auth/signin`;
+
+export default function SignInScreen({ navigateTo, setToken }: { navigateTo: (screen: string) => void, setToken: (t: string) => void }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -24,7 +27,8 @@ export default function SignInScreen({ navigateTo }: { navigateTo: (screen: stri
       });
       const data = await res.json();
       
-      if (res.ok) {
+      if (res.ok && data.accessToken) {
+        setToken(data.accessToken);
         Alert.alert('Success', 'Logged in successfully');
         navigateTo('Dashboard');
       } else {

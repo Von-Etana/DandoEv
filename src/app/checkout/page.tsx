@@ -132,17 +132,54 @@ export default function CheckoutPage() {
                                     <button className="btn btn-primary flex-1" disabled={loading} onClick={async () => {
                                         setLoading(true);
                                         try {
+                                            const token = document.cookie.split('token=')[1]?.split(';')[0];
                                             const res = await fetch('/api/orders', {
                                                 method: 'POST',
-                                                headers: { 'Content-Type': 'application/json' },
-                                                body: JSON.stringify({ bikeId: bike.id, bikeName: bike.name, bikeImage: bike.images[0], totalAmount: total, paymentMethod, deliveryType, buyer, delivery })
+                                                headers: { 
+                                                    'Content-Type': 'application/json',
+                                                    'Authorization': `Bearer ${token}` 
+                                                },
+                                                body: JSON.stringify({ 
+                                                    bikeId: bike.id, 
+                                                    quantity: 1, 
+                                                    paymentMethod: paymentMethod === 'bank' ? 'bank_transfer' : paymentMethod, 
+                                                    deliveryAddress: delivery.address,
+                                                    deliveryCity: delivery.city,
+                                                    deliveryState: delivery.state,
+                                                    deliveryPhone: buyer.phone 
+                                                })
                                             });
                                             if (res.ok) {
                                                 const data = await res.json();
-                                                setOrderId(data.orderId);
-                                                setStep(3);
+                                                const newOrderId = data.orderId;
+                                                setOrderId(newOrderId);
+                                                
+                                                if (paymentMethod === 'card') {
+                                                    // Initialize Paystack Payment sequence
+                                                    const payRes = await fetch('/api/payments/initialize', {
+                                                        method: 'POST',
+                                                        headers: { 
+                                                            'Content-Type': 'application/json',
+                                                            'Authorization': `Bearer ${token}` 
+                                                        },
+                                                        body: JSON.stringify({
+                                                            amount: total,
+                                                            orderId: newOrderId,
+                                                            callbackUrl: `${window.location.origin}/checkout/callback`
+                                                        })
+                                                    });
+                                                    if (payRes.ok) {
+                                                        const payData = await payRes.json();
+                                                        if (payData.data?.authorizationUrl) {
+                                                            window.location.href = payData.data.authorizationUrl;
+                                                            return; // Skip step 3 temporarily
+                                                        }
+                                                    }
+                                                }
+                                                setStep(3); // Go to success manually if not card or payload failed
                                             } else {
-                                                alert('Failed to process order.');
+                                                const err = await res.json();
+                                                alert(`Failed to process order. ${err.error || ''}`);
                                             }
                                         } catch (e) {
                                             alert('Network error.');
@@ -150,8 +187,7 @@ export default function CheckoutPage() {
                                             setLoading(false);
                                         }
                                     }}>{loading ? 'Processing...' : `Pay ${formatNaira(total)} →`}</button>
-                                </div>
-                            </div>
+                                </div>                            </div>
                         ) : (
                             <div className="card card-elevated animate-scale-in" style={{ padding: 'var(--space-8)', borderRadius: 'var(--radius-2xl)', textAlign: 'center' }}>
                                 <div style={{

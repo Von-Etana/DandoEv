@@ -4,6 +4,8 @@ import { loanActionSchema, type LoanActionInput } from '@/lib/schemas';
 import { enqueueNotification } from '@/lib/queue';
 import prisma from '@/lib/prisma';
 import logger from '@/lib/logger';
+import { calculateInstallment } from '@/lib/utils';
+import { Prisma } from '@prisma/client';
 
 // ---- Valid state transitions ----
 const ALLOWED_TRANSITIONS: Record<string, string[]> = {
@@ -77,16 +79,51 @@ export const PATCH = withRoles(
           );
         }
 
-        // ---- Update loan ----
-        const updatedLoan = await prisma.loan.update({
-          where: { id },
-          data: {
-            status: targetStatus,
-            adminNotes,
-            rejectionReason: action === 'reject' ? rejectionReason : null,
-            approvedBy: action === 'approve' ? ctx.user.sub : null,
-            approvedAt: action === 'approve' ? new Date() : null,
-          },
+        // ---- Update loan and generate schedule in transaction ----
+        const updatedLoan = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+          const uLoan = await tx.loan.update({
+            where: { id },
+            data: {
+              status: targetStatus,
+              adminNotes,
+              rejectionReason: action === 'reject' ? rejectionReason : null,
+              approvedBy: action === 'approve' ? ctx.user.sub : null,
+              approvedAt: action === 'approve' ? new Date() : null,
+            },
+          });
+
+          if (action === 'approve') {
+            // Generate amortization schedule (Installments)
+            const { installmentAmount, numberOfInstallments } = calculateInstallment(
+              Number(loan.loanAmount),
+              Number(loan.interestRate),
+              loan.tenure
+            );
+
+            const repayments = [];
+            for (let i = 1; i <= numberOfInstallments; i++) {
+              const dueDate = new Date();
+              dueDate.setDate(dueDate.getDate() + (i * 2)); // Bi-daily (Every 2 days)
+
+              repayments.push({
+                loanId: id,
+                userId: loan.userId,
+                installmentNumber: i,
+                amount: new Prisma.Decimal(installmentAmount),
+                amountPaid: new Prisma.Decimal(0),
+                dueDate,
+                status: 'upcoming' as const,
+              });
+            }
+
+            await tx.repayment.createMany({
+              data: repayments,
+            });
+
+            log.info({ loanId: id, installments: numberOfInstallments }, 'Amortization schedule generated');
+          }
+
+          return uLoan;
         });
 
         // ---- Audit log ----

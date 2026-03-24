@@ -9,7 +9,7 @@ import { APP_NAME } from '@/lib/constants';
 import { LayoutDashboard, ClipboardList, Bike, Wallet, AlertTriangle, TrendingUp, Users, Zap, X, Menu, XCircle, Mail, Scale, MessageSquare, UserCheck, Lock, Calendar, CheckCircle, Clock, BarChart2, Star } from 'lucide-react';
 import BikeModal from '@/components/admin/BikeModal';
 
-type Tab = 'overview' | 'applications' | 'bikes' | 'payments' | 'defaults' | 'reports' | 'users';
+type Tab = 'overview' | 'applications' | 'bikes' | 'payments' | 'defaults' | 'reports' | 'users' | 'settings';
 
 export default function AdminDashboard() {
     const [activeTab, setActiveTab] = useState<Tab>('overview');
@@ -21,6 +21,11 @@ export default function AdminDashboard() {
     // Modal State для редактирования / добавления байка
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedBike, setSelectedBike] = useState<any | null>(null);
+
+    // Live Data Extensions (Phase 4)
+    const [delinquentData, setDelinquentData] = useState<{ totalAtRisk: number; repayments: any[] }>({ totalAtRisk: 0, repayments: [] });
+    const [systemConfig, setSystemConfig] = useState<Record<string, string>>({});
+    const [configLoading, setConfigLoading] = useState(false);
 
     const fetchBikes = async () => {
         setLoadingBikes(true);
@@ -37,6 +42,28 @@ export default function AdminDashboard() {
         }
     };
 
+    const fetchDelinquent = async () => {
+        try {
+            const r = await fetch('/api/admin/loans/delinquent');
+            if (r.ok) {
+                const d = await r.json();
+                setDelinquentData(d.data);
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    const fetchConfig = async () => {
+        try {
+            const r = await fetch('/api/admin/config');
+            if (r.ok) {
+                const d = await r.json();
+                setSystemConfig(d.data);
+            }
+        } catch (e) {}
+    };
+
     useEffect(() => {
         Promise.all([
             fetch('/api/loans').then(r => r.json()),
@@ -47,6 +74,8 @@ export default function AdminDashboard() {
         }).catch(e => console.error(e));
 
         fetchBikes();
+        fetchDelinquent();
+        fetchConfig();
     }, []);
 
     const totalRev = orders.reduce((acc, o) => acc + (o.totalAmount || 0), 0) + loans.reduce((acc, l) => acc + (l.totalAmount || 0), 0);
@@ -69,6 +98,7 @@ export default function AdminDashboard() {
         { id: 'defaults', icon: <AlertTriangle size={18} />, label: 'Defaults' },
         { id: 'reports', icon: <TrendingUp size={18} />, label: 'Reports' },
         { id: 'users', icon: <Users size={18} />, label: 'Users' },
+        { id: 'settings', icon: <Lock size={18} />, label: 'Settings' },
     ];
 
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -144,6 +174,7 @@ export default function AdminDashboard() {
                                 {activeTab === 'defaults' && 'Manage defaults and collections'}
                                 {activeTab === 'reports' && 'View analytics and reports'}
                                 {activeTab === 'users' && 'Manage customer accounts'}
+                                {activeTab === 'settings' && 'Manage Global Risk Controller setups Parameters constants setup'}
                             </p>
                         </div>
                     </div>
@@ -422,8 +453,8 @@ export default function AdminDashboard() {
                     <div className="animate-fade-in">
                         <div className="grid grid-4" style={{ gap: 'var(--space-4)', marginBottom: '2rem' }}>
                             {[
-                                { icon: <AlertTriangle size={18} />, label: 'Overdue', value: '5', bg: 'var(--warning-bg)' },
-                                { icon: <XCircle size={18} />, label: 'Defaulted', value: '3', bg: 'var(--danger-bg)' },
+                                { icon: <AlertTriangle size={18} />, label: 'Overdue Total', value: delinquentData.repayments.length.toString(), bg: 'var(--warning-bg)' },
+                                { icon: <Wallet size={18} />, label: 'Value At Risk', value: formatNaira(delinquentData.totalAtRisk), bg: 'var(--danger-bg)' },
                                 { icon: <Mail size={18} />, label: 'Reminders Sent', value: '28', bg: 'var(--info-bg)' },
                                 { icon: <Scale size={18} />, label: 'Legal Cases', value: '1', bg: '#F0EBFF' },
                             ].map(s => (
@@ -434,6 +465,38 @@ export default function AdminDashboard() {
                                 </div>
                             ))}
                         </div>
+
+                        {delinquentData.repayments.length > 0 && (
+                            <div className="table-container" style={{ borderRadius: 'var(--radius-2xl)', marginBottom: '2rem' }}>
+                                <table className="table">
+                                    <thead>
+                                        <tr><th>User</th><th>Bike</th><th>Amount Due</th><th>Days Overdue</th><th>Actions</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        {delinquentData.repayments.map(r => (
+                                            <tr key={r.repaymentId}>
+                                                <td style={{ fontWeight: 600 }}>{r.user.firstName} {r.user.lastName}</td>
+                                                <td>{r.bike.name}</td>
+                                                <td style={{ fontWeight: 700, color: 'var(--danger)' }}>{formatNaira(r.amount - r.amountPaid)}</td>
+                                                <td><span className="badge badge-warning">{r.daysOverdue} days</span></td>
+                                                <td>
+                                                    <button className="btn btn-ghost btn-sm" onClick={async () => {
+                                                        const overrideReason = prompt('Enter offline clear setup reason triggers validation:');
+                                                        if (overrideReason) {
+                                                           await fetch(`/api/admin/repayments/${r.repaymentId}/reconcile`, {
+                                                              method: 'POST',
+                                                              body: JSON.stringify({ overrideReason })
+                                                           });
+                                                           fetchDelinquent();
+                                                        }
+                                                    }}>Clear Debt Offline</button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
                         <div className="card card-elevated" style={{ padding: 'var(--space-6)', borderRadius: 'var(--radius-2xl)' }}>
                             <h3 style={{ fontWeight: 700, marginBottom: '1rem' }}>Collections Actions</h3>
                             <div className="flex flex-col gap-4">
