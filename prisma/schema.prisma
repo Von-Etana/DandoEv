@@ -397,6 +397,7 @@ model RefreshToken {
   tokenHash String
   expiresAt DateTime
   revoked   Boolean  @default(false)
+  revokedAt DateTime?
   familyId  String   // for reuse detection
   createdAt DateTime @default(now())
 

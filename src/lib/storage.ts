@@ -17,6 +17,18 @@ export interface UploadResult {
 }
 
 /**
+ * Simple magic-number based MIME type detection.
+ * Supports PDF, JPEG, PNG.
+ */
+function getMimeType(buffer: Buffer): string {
+  const header = buffer.toString('hex', 0, 8).toUpperCase();
+  if (header.startsWith('25504446')) return 'application/pdf';
+  if (header.startsWith('FFD8FF')) return 'image/jpeg';
+  if (header.startsWith('89504E47')) return 'image/png';
+  return 'application/octet-stream';
+}
+
+/**
  * Upload an image or PDF to Cloudinary OR Supabase.
  * Prioritizes Cloudinary if credentials exist, otherwise falls back to Supabase.
  */
@@ -25,6 +37,7 @@ export async function uploadFile(
   folder: string = 'documents',
   fileName?: string
 ): Promise<UploadResult> {
+  const contentType = getMimeType(buffer);
   const hasCloudinary = !!(process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY);
   const hasSupabase = !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
   
@@ -38,6 +51,7 @@ export async function uploadFile(
           folder: `dandoev/${folder}`,
           resource_type: 'auto',
           public_id: finalFileName,
+          format: contentType.split('/')[1], // optional hint
         },
         (error, result) => {
           if (error) return reject(error);
@@ -66,7 +80,7 @@ export async function uploadFile(
       .from(bucketName)
       .upload(filePath, buffer, {
         upsert: true,
-        contentType: 'application/octet-stream' // fallback
+        contentType: contentType
       });
 
     if (error) {

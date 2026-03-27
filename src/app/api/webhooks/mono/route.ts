@@ -69,6 +69,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ received: true });
   } catch (error: any) {
     log.error({ error: error.message }, 'Mono webhook processing error');
+    
+    const isRetryable = error.message?.includes('Prisma') || 
+                       error.message?.includes('connection') || 
+                       error.message?.includes('timeout');
+
+    if (isRetryable) {
+      return NextResponse.json({ error: 'Service Unavailable' }, { status: 503 });
+    }
+
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

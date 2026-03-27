@@ -11,11 +11,21 @@ export const GET = withRoles(
     try {
       const url = new URL(req.url);
       const status = url.searchParams.get('status');
+      const search = url.searchParams.get('search');
       const page = parseInt(url.searchParams.get('page') || '1');
       const limit = parseInt(url.searchParams.get('limit') || '20');
       const skip = (page - 1) * limit;
 
-      const where = status ? { status: status as never } : {};
+      const where: any = {};
+      if (status) where.status = status;
+      if (search) {
+        where.OR = [
+          { user: { firstName: { contains: search, mode: 'insensitive' } } },
+          { user: { lastName: { contains: search, mode: 'insensitive' } } },
+          { user: { email: { contains: search, mode: 'insensitive' } } },
+          { user: { phone: { contains: search, mode: 'insensitive' } } },
+        ];
+      }
 
       const [loans, total] = await Promise.all([
         prisma.loan.findMany({

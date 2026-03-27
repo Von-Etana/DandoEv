@@ -95,9 +95,19 @@ export async function POST(req: NextRequest) {
 
     // ---- Return 200 immediately ----
     return NextResponse.json({ received: true });
-  } catch (error) {
-    log.error({ error }, 'Webhook processing error');
-    // Still return 200 to prevent Paystack from retrying
+  } catch (error: any) {
+    log.error({ error: error.message }, 'Webhook processing error');
+    
+    // If it's a Prisma connection error or similar retryable infra error, return 503
+    const isRetryable = error.message?.includes('Prisma') || 
+                       error.message?.includes('connection') || 
+                       error.message?.includes('timeout');
+
+    if (isRetryable) {
+      return NextResponse.json({ error: 'Service Unavailable' }, { status: 503 });
+    }
+
+    // Still return 200 for logical errors to prevent Paystack from retrying indefinitely
     return NextResponse.json({ received: true });
   }
 }

@@ -98,14 +98,25 @@ export async function rotateRefreshToken(rawRefreshToken: string): Promise<Token
 
   if (tokens.length === 0) return null;
 
-  // Check if the token matches any non-revoked token
+  // Check if the token matches any token (even recently revoked)
   let matchedToken = null;
+  const GRACE_PERIOD_MS = 15000; // 15 seconds
+
   for (const t of tokens) {
-    if (!t.revoked && new Date() < t.expiresAt) {
+    if (new Date() < t.expiresAt) {
       const isMatch = await bcrypt.compare(tokenValue, t.tokenHash);
       if (isMatch) {
-        matchedToken = t;
-        break;
+        // If it's already revoked, only allow if within grace period
+        if (t.revoked) {
+          const revokedAt = (t as any).revokedAt;
+          if (revokedAt && (Date.now() - new Date(revokedAt).getTime()) < GRACE_PERIOD_MS) {
+            matchedToken = t;
+            break;
+          }
+        } else {
+          matchedToken = t;
+          break;
+        }
       }
     }
   }
@@ -125,11 +136,16 @@ export async function rotateRefreshToken(rawRefreshToken: string): Promise<Token
     return null;
   }
 
-  // Revoke the old token
-  await prisma.refreshToken.update({
-    where: { id: matchedToken.id },
-    data: { revoked: true },
-  });
+  // Revoke the old token (if not already revoked)
+  if (!matchedToken.revoked) {
+    await prisma.refreshToken.update({
+      where: { id: matchedToken.id },
+      data: { 
+        revoked: true,
+        revokedAt: new Date(),
+      },
+    });
+  }
 
   // Fetch user for new access token
   const user = await prisma.user.findUnique({ where: { id: userId } });
