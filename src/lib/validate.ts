@@ -21,7 +21,7 @@ export function validateRequest<T>(schema: z.ZodType<T>, body: unknown): Validat
   }
 
   // Zod v4 uses result.error.issues for structured errors
-  const errors = result.error.issues.map((issue) => ({
+  const errors = result.error.issues.map((issue: any) => ({
     field: issue.path.join('.'),
     message: issue.message,
   }));

@@ -35,7 +35,7 @@ export const GET = withRoles(
         data: {
           count: overdueRepayments.length,
           totalAtRisk,
-          repayments: overdueRepayments.map((r) => ({
+          repayments: overdueRepayments.map((r: any) => ({
              repaymentId: r.id,
              amount: Number(r.amount),
              amountPaid: Number(r.amountPaid),

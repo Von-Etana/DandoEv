@@ -29,7 +29,7 @@ export async function postLedgerEntries(
   }
 
   await tx.ledgerEntry.createMany({
-    data: entries.map((e) => ({
+    data: entries.map((e: any) => ({
       groupId,
       account: e.account,
       debit: e.debit,
