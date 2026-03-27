@@ -5,8 +5,8 @@ import { enqueueNotification } from '@/lib/queue';
 import prisma from '@/lib/prisma';
 import logger from '@/lib/logger';
 import { calculateInstallment } from '@/lib/utils';
-import { Prisma } from '@prisma/client';
 import { generateSchedule } from '@/lib/loan-engine';
+import { type TxClient } from '@/lib/prisma-types';
 
 // ---- Valid state transitions ----
 const ALLOWED_TRANSITIONS: Record<string, string[]> = {
@@ -81,7 +81,7 @@ export const PATCH = withRoles(
         }
 
         // ---- Update loan and generate schedule in transaction ----
-        const updatedLoan = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+        const updatedLoan = await prisma.$transaction(async (tx: TxClient) => {
           const uLoan = await tx.loan.update({
             where: { id },
             data: {

@@ -2,10 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { withAuth, withIdempotency, withValidation, type ApiContext } from '@/lib/api-handler';
 import { createOrderSchema, type CreateOrderInput } from '@/lib/schemas';
 import prisma from '@/lib/prisma';
-import { Prisma } from '@prisma/client';
 import logger from '@/lib/logger';
-
-type TxClient = Prisma.TransactionClient;
+import { type TxClient } from '@/lib/prisma-types';
 
 /**
  * GET /api/orders — List orders for authenticated user (or all for admins)

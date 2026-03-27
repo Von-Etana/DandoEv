@@ -1,7 +1,6 @@
 import prisma from './prisma';
 import logger from './logger';
 import { lockSavings } from './wallet';
-import { Prisma } from '@prisma/client';
 import { chargePaystackAuthorization } from './paystack';
 
 /**

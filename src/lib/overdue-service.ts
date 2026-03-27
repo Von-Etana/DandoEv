@@ -1,7 +1,6 @@
 import prisma from './prisma';
 import logger from './logger';
 import { BNPL_CONFIG } from './constants';
-import { Prisma } from '@prisma/client';
 import { enqueueNotification } from './queue';
 
 /**

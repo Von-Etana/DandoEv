@@ -1,7 +1,6 @@
-import { Prisma } from '@prisma/client';
 import { calculateInstallment } from './utils';
+import { type TxClient } from './prisma-types';
 
-type TxClient = Prisma.TransactionClient;
 
 /**
  * Generate a complete repayment schedule and daily savings plan for a loan.
@@ -44,7 +43,7 @@ export async function generateSchedule(
             userId,
             loanId,
             date: d,
-            amount: new Prisma.Decimal(1000),
+            amount: 1000,
             status: 'pending' as const,
         });
     }
@@ -60,8 +59,8 @@ export async function generateSchedule(
             loanId,
             userId,
             installmentNumber: i,
-            amount: new Prisma.Decimal(installmentAmount),
-            amountPaid: new Prisma.Decimal(0),
+            amount: installmentAmount,
+            amountPaid: 0,
             dueDate,
             status: 'upcoming' as const,
         });

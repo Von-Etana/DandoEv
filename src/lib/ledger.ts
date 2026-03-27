@@ -1,8 +1,7 @@
 import prisma from './prisma';
 import logger from './logger';
-import { Prisma } from '@prisma/client';
+import { type TxClient } from './prisma-types';
 
-type TxClient = Prisma.TransactionClient;
 
 /**
  * Creates balanced double-entry ledger rows.
@@ -33,8 +32,8 @@ export async function postLedgerEntries(
     data: entries.map((e) => ({
       groupId,
       account: e.account,
-      debit: new Prisma.Decimal(e.debit),
-      credit: new Prisma.Decimal(e.credit),
+      debit: e.debit,
+      credit: e.credit,
       reference: e.reference,
       details: e.details || null,
     })),

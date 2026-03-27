@@ -1,9 +1,9 @@
-import { Prisma } from '@prisma/client';
 import prisma from './prisma';
 import { postLedgerEntries } from './ledger';
 import logger from './logger';
+import { type TxClient } from './prisma-types';
 
-export async function ensureWallet(tx: Prisma.TransactionClient, userId: string) {
+export async function ensureWallet(tx: TxClient, userId: string) {
   let wallet = await tx.wallet.findUnique({ where: { userId } });
   if (!wallet) {
     wallet = await tx.wallet.create({ data: { userId } });
@@ -16,7 +16,7 @@ export async function ensureWallet(tx: Prisma.TransactionClient, userId: string)
  * Increments liability (Locked Savings) and decrements liability (Main Wallet).
  */
 export async function lockSavings(
-  tx: Prisma.TransactionClient,
+  tx: TxClient,
   userId: string,
   amount: number,
   reference: string,
@@ -63,7 +63,7 @@ export async function lockSavings(
  * Refund from Locked Savings to Main Wallet
  */
 export async function unlockSavings(
-  tx: Prisma.TransactionClient,
+  tx: TxClient,
   userId: string,
   amount: number,
   reference: string,
@@ -108,7 +108,7 @@ export async function unlockSavings(
  * Credit Locked Savings independently (e.g., from card payment split)
  */
 export async function creditLockedSavings(
-  tx: Prisma.TransactionClient,
+  tx: TxClient,
   userId: string,
   amount: number,
   reference: string,

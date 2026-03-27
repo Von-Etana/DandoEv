@@ -3,7 +3,7 @@ import { withRoles, type ApiContext } from '@/lib/api-handler';
 import prisma from '@/lib/prisma';
 import logger from '@/lib/logger';
 import { creditLockedSavings } from '@/lib/wallet';
-import { Prisma } from '@prisma/client';
+import { type TxClient } from '@/lib/prisma-types';
 
 /**
  * POST /api/admin/repayments/[id]/reconcile
@@ -37,7 +37,7 @@ export const POST = withRoles(
 
       const remainingAmount = Number(repayment.amount) - Number(repayment.amountPaid);
 
-      const updatedRepayment = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      const updatedRepayment = await prisma.$transaction(async (tx: TxClient) => {
          const uR = await tx.repayment.update({
             where: { id },
             data: {

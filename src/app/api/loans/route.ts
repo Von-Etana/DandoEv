@@ -2,10 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { withAuth, withIdempotency, withValidation, type ApiContext } from '@/lib/api-handler';
 import { createLoanSchema, type CreateLoanInput } from '@/lib/schemas';
 import prisma from '@/lib/prisma';
-import { Prisma } from '@prisma/client';
 import logger from '@/lib/logger';
-
-type TxClient = Prisma.TransactionClient;
+import { type TxClient } from '@/lib/prisma-types';
 
 /**
  * GET /api/loans — List loans for authenticated user (or all for admins)
@@ -108,7 +106,7 @@ export const POST = withAuth(
                 data: data.documents.map((d) => ({
                   userId: ctx.user.sub,
                   loanId: loan.id,
-                  type: d.type,
+                  type: d.type as any,
                   fileUrl: d.fileUrl,
                   fileName: d.fileName,
                   verificationStatus: 'pending',
