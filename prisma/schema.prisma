@@ -93,6 +93,7 @@ enum DocumentType {
   bank_statement
   selfie
   signature
+  work_id
 }
 
 enum VerificationStatus {

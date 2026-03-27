@@ -74,7 +74,7 @@ export const createLoanSchema = z.object({
   })).optional(),
   // Documents
   documents: z.array(z.object({
-    type: z.enum(['national_id', 'passport', 'drivers_license', 'bvn_slip', 'utility_bill', 'bank_statement', 'selfie', 'signature']),
+    type: z.enum(['national_id', 'passport', 'drivers_license', 'bvn_slip', 'utility_bill', 'bank_statement', 'selfie', 'signature', 'work_id']),
     fileUrl: z.string().url(),
     fileName: z.string().max(255),
   })).optional(),

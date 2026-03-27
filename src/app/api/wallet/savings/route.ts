@@ -20,6 +20,12 @@ export const GET = withAuth(
 
       const nextUnlockDate = activeLoan?.repayments[0]?.dueDate || null;
 
+      const [collectedCount, missedCount, pendingCount] = await Promise.all([
+        prisma.dailySaving.count({ where: { userId: ctx.user.sub, status: 'collected' } }),
+        prisma.dailySaving.count({ where: { userId: ctx.user.sub, status: 'missed' } }),
+        prisma.dailySaving.count({ where: { userId: ctx.user.sub, status: 'pending' } }),
+      ]);
+
       return NextResponse.json({
         success: true,
         data: {
@@ -28,6 +34,12 @@ export const GET = withAuth(
           savedSoFar: Number(wallet.lockedSaving), // Helper mapping name
           lockedUntil: nextUnlockDate ? nextUnlockDate.toISOString() : 'No active restriction',
           loanStatus: activeLoan?.status || 'none',
+          dailyStats: {
+            collected: collectedCount,
+            missed: missedCount,
+            pending: pendingCount,
+            total: collectedCount + missedCount + pendingCount
+          }
         },
       });
     } catch (error) {

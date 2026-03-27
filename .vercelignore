@@ -1,0 +1,8 @@
+ebike-mobile/
+ebike-temp/
+docker-compose.yml
+prisma/migrations/
+docs/
+Project_Initiation_Document.md
+README.md
+data/

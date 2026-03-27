@@ -58,14 +58,38 @@ export default function DashboardScreen({ navigateTo, token }: { navigateTo: (sc
                         <Text style={{fontSize: 28, fontWeight: '800', color: '#10B981', marginBottom: 4}}>
                             ₦{savingsData.savedSoFar.toLocaleString()}
                         </Text>
-                        <Text style={{fontSize: 12, color: '#6B7280'}}>
+                        <Text style={{fontSize: 12, color: '#6B7280', marginBottom: 12}}>
                             Locked until: {savingsData.lockedUntil !== 'No active restriction' 
                                 ? new Date(savingsData.lockedUntil).toLocaleDateString() 
                                 : 'No lock - Available for unlock sweep!'}
                         </Text>
+
+                        {/* Daily Collection Progress */}
+                        {savingsData?.dailyStats && (
+                            <View style={{ borderTopWidth: 1, borderTopColor: '#E5E7EB', paddingTop: 12 }}>
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                                    <Text style={{ fontSize: 13, fontWeight: '600', color: '#374151' }}>Daily Collection Progress</Text>
+                                    <Text style={{ fontSize: 13, fontWeight: '700', color: '#2E3192' }}>
+                                        {savingsData.dailyStats.collected}/{savingsData.dailyStats.total} Days
+                                    </Text>
+                                </View>
+                                <View style={{ height: 8, backgroundColor: '#E5E7EB', borderRadius: 4, overflow: 'hidden' }}>
+                                    <View style={{ 
+                                        height: '100%', 
+                                        backgroundColor: '#10B981', 
+                                        width: `${(savingsData.dailyStats.collected / (savingsData.dailyStats.total || 1)) * 100}%` 
+                                    }} />
+                                </View>
+                                {savingsData.dailyStats.missed > 0 && (
+                                    <Text style={{ fontSize: 11, color: '#EF4444', marginTop: 4, fontWeight: '500' }}>
+                                        ⚠️ You have missed {savingsData.dailyStats.missed} days. Fund your wallet to catch up.
+                                    </Text>
+                                )}
+                            </View>
+                        )}
                     </>
                 ) : (
-                    <Text style={styles.subtext}>No compuslory savings actively locked.</Text>
+                    <Text style={styles.subtext}>No compulsory savings actively locked.</Text>
                 )}
             </View>
 

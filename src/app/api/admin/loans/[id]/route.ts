@@ -6,6 +6,7 @@ import prisma from '@/lib/prisma';
 import logger from '@/lib/logger';
 import { calculateInstallment } from '@/lib/utils';
 import { Prisma } from '@prisma/client';
+import { generateSchedule } from '@/lib/loan-engine';
 
 // ---- Valid state transitions ----
 const ALLOWED_TRANSITIONS: Record<string, string[]> = {
@@ -93,34 +94,17 @@ export const PATCH = withRoles(
           });
 
           if (action === 'approve') {
-            // Generate amortization schedule (Installments)
-            const { installmentAmount, numberOfInstallments } = calculateInstallment(
+            // Generate full schedule (Repayments + Daily Savings)
+            const { totalInstallments, totalDays } = await generateSchedule(
+              tx,
+              id,
+              loan.userId,
               Number(loan.loanAmount),
               Number(loan.interestRate),
               loan.tenure
             );
 
-            const repayments = [];
-            for (let i = 1; i <= numberOfInstallments; i++) {
-              const dueDate = new Date();
-              dueDate.setDate(dueDate.getDate() + (i * 2)); // Bi-daily (Every 2 days)
-
-              repayments.push({
-                loanId: id,
-                userId: loan.userId,
-                installmentNumber: i,
-                amount: new Prisma.Decimal(installmentAmount),
-                amountPaid: new Prisma.Decimal(0),
-                dueDate,
-                status: 'upcoming' as const,
-              });
-            }
-
-            await tx.repayment.createMany({
-              data: repayments,
-            });
-
-            log.info({ loanId: id, installments: numberOfInstallments }, 'Amortization schedule generated');
+            log.info({ loanId: id, totalInstallments, totalDays }, 'Loan schedule and savings plan generated');
           }
 
           return uLoan;

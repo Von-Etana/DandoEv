@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { APP_NAME, EMPLOYMENT_OPTIONS, NIGERIAN_STATES } from '@/lib/constants';
-import { AlertTriangle, BarChart3 } from 'lucide-react';
+import { AlertTriangle, BarChart3, Home, Upload } from 'lucide-react';
 
 const BNPL_STEPS = ['Personal Info', 'Identity (KYC)', 'Financial', 'Guarantor', 'Loan Terms', 'Submit'];
 
@@ -29,6 +29,7 @@ export default function PersonalInfoPage() {
     const [form, setForm] = useState({
         firstName: '', lastName: '', email: '', phone: '', dateOfBirth: '', gender: '', address: '',
         city: '', state: '', employmentStatus: '', monthlyIncome: '', employerName: '', employerAddress: '',
+        addressVerified: false,
     });
     
     useEffect(() => {
@@ -41,9 +42,9 @@ export default function PersonalInfoPage() {
         }
     }, []);
 
-    const u = (field: string, value: string) => setForm(prev => ({ ...prev, [field]: value }));
+    const u = (field: string, value: string | boolean) => setForm(prev => ({ ...prev, [field]: value }));
 
-    const isValid = form.firstName && form.lastName && form.email && form.phone && form.dateOfBirth && form.gender && form.address && form.city && form.state && form.employmentStatus && form.monthlyIncome;
+    const isValid = form.firstName && form.lastName && form.email && form.phone && form.dateOfBirth && form.gender && form.address && form.city && form.state && form.employmentStatus && form.monthlyIncome && form.addressVerified;
 
     return (
         <div style={{ minHeight: '100vh', background: 'var(--gray-50)' }}>
@@ -105,6 +106,13 @@ export default function PersonalInfoPage() {
                                 </select>
                             </div>
                         </div>
+
+                        <div style={{ borderTop: '1px solid var(--gray-100)', paddingTop: '1rem', marginTop: '0.5rem' }}>
+                            <h3 style={{ fontWeight: 700, marginBottom: '0.75rem', fontSize: 'var(--text-base)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <Home size={18} color="var(--primary)" /> Residential Address
+                            </h3>
+                        </div>
+
                         <div className="form-group">
                             <label className="form-label">Home Address</label>
                             <input className="form-input" placeholder="24 Sandstrip Oworoshoki" value={form.address} onChange={e => u('address', e.target.value)} />
@@ -120,6 +128,34 @@ export default function PersonalInfoPage() {
                                     <option value="">Select state</option>
                                     {NIGERIAN_STATES.map(s => <option key={s} value={s}>{s}</option>)}
                                 </select>
+                            </div>
+                        </div>
+
+                        <div className="form-group">
+                            <label className="form-label">Address Verification (Utility Bill / Rent Receipt)</label>
+                            <div 
+                                onClick={() => u('addressVerified', true)}
+                                style={{ 
+                                    border: '2px dashed var(--gray-300)', 
+                                    padding: '1.5rem', 
+                                    borderRadius: 'var(--radius-lg)', 
+                                    textAlign: 'center', 
+                                    cursor: 'pointer', 
+                                    background: form.addressVerified ? 'rgba(76, 175, 80, 0.05)' : 'var(--gray-50)',
+                                    borderColor: form.addressVerified ? 'var(--success)' : 'var(--gray-300)'
+                                }}>
+                                {form.addressVerified ? (
+                                    <div className="animate-scale-in">
+                                        <span style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.5rem', color: 'var(--success)' }}><Upload size={32} /></span>
+                                        <span style={{ fontSize: 'var(--text-sm)', color: 'var(--success)', fontWeight: 600 }}>Document Uploaded Successfully</span>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <span style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.5rem', color: 'var(--gray-400)' }}><Upload size={32} /></span>
+                                        <span style={{ fontSize: 'var(--text-sm)', color: 'var(--gray-600)', fontWeight: 500 }}>Click to upload proof of address</span>
+                                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--gray-400)', marginTop: '0.25rem' }}>Must be within the last 3 months</div>
+                                    </>
+                                )}
                             </div>
                         </div>
 

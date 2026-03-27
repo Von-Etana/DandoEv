@@ -245,7 +245,8 @@ export default function LoanTermsPage() {
                                     // Documents
                                     documents: [
                                         { type: 'selfie', fileUrl: 'https://placeholder.com/selfie.jpg', fileName: 'selfie.jpg' },
-                                        { type: 'national_id', fileUrl: 'https://placeholder.com/id.jpg', fileName: 'id.jpg' }
+                                        { type: 'national_id', fileUrl: 'https://placeholder.com/id.jpg', fileName: 'id.jpg' },
+                                        { type: 'utility_bill', fileUrl: 'https://placeholder.com/utility.jpg', fileName: 'utility.jpg' }
                                     ]
                                 };
                                 
