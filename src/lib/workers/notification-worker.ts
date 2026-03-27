@@ -1,6 +1,8 @@
 import { Job } from 'bullmq';
 import logger from '../logger';
 import prisma from '../prisma';
+import { sendEmail } from '../resend';
+import { sendSms } from '../termii';
 
 export async function processNotificationJob(job: Job) {
   const { userId, type, title, message, channels = ['email'] } = job.data as {
@@ -30,6 +32,10 @@ export async function processNotificationJob(job: Job) {
         case 'sms':
           if (user.phone) await sendSms(user.phone, message);
           break;
+        case 'push':
+          // Future: Supabase Realtime / Firebase
+          logger.info({ userId, title }, 'Push notification triggered');
+          break;
         default:
           logger.warn({ channel }, 'Unsupported notification channel');
       }
@@ -50,14 +56,4 @@ export async function processNotificationJob(job: Job) {
     logger.error({ jobId: job.id, error: error.message }, 'Notification job failed');
     throw error;
   }
-}
-
-async function sendEmail(to: string, subject: string, body: string) {
-  // Placeholder for Email Service (SendGrid, Mailgun, NodeMailer)
-  logger.info({ to, subject }, '📧 [EMAIL SENT] (Mock)');
-}
-
-async function sendSms(to: string, message: string) {
-  // Placeholder for SMS Service (Twilio, Termii)
-  logger.info({ to, message }, '📱 [SMS SENT] (Mock)');
 }

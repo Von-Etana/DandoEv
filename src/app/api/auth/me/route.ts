@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyAccessToken, extractBearerToken } from '@/lib/auth';
+import { verifySupabaseToken, extractBearerToken } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
 export async function GET(req: NextRequest) {
   try {
-    // Try Bearer token first, then cookie fallback
     const authHeader = req.headers.get('authorization');
     const token = extractBearerToken(authHeader) || req.cookies.get('token')?.value;
 
@@ -12,7 +11,11 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    const decoded = verifyAccessToken(token);
+    const decoded = await verifySupabaseToken(token);
+    if (!decoded) {
+      return NextResponse.json({ error: 'Invalid or expired session' }, { status: 401 });
+    }
+
     const user = await prisma.user.findUnique({
       where: { id: decoded.sub },
       select: {
@@ -37,7 +40,7 @@ export async function GET(req: NextRequest) {
     }
 
     return NextResponse.json({ user });
-  } catch {
-    return NextResponse.json({ error: 'Invalid or expired token' }, { status: 401 });
+  } catch (error: any) {
+    return NextResponse.json({ error: 'Authentication internal error' }, { status: 500 });
   }
 }

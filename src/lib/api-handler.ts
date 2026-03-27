@@ -7,7 +7,7 @@
 // - withIdempotency() → Idempotency key handling
 // ============================================================
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyAccessToken, extractBearerToken, type JwtPayload } from './auth';
+import { verifySupabaseToken, extractBearerToken, type JwtPayload } from './auth';
 import { checkRateLimit, rateLimitResponse, type RateLimitConfig } from './rate-limiter';
 import { validateRequest } from './validate';
 import { checkIdempotencyKey, storeIdempotencyResponse } from './idempotency';
@@ -43,11 +43,12 @@ export function withAuth(handler: ApiHandler): (req: NextRequest) => Promise<Nex
     }
 
     try {
-      const payload = verifyAccessToken(token);
+      const payload = await verifySupabaseToken(token);
+      if (!payload) throw new Error('Invalid token');
       return handler(req, { user: payload, requestId });
     } catch {
       return NextResponse.json(
-        { error: 'Invalid or expired token' },
+        { error: 'Invalid or expired session' },
         { status: 401 }
       );
     }
