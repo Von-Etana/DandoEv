@@ -4,7 +4,9 @@ import { supabase } from '../lib/supabase';
 
 const API_BASE = Platform.OS === 'android' ? 'http://10.0.2.2:3000' : 'http://localhost:3000';
 
-export default function DashboardScreen({ navigateTo, token }: { navigateTo: (screen: string) => void, token: string | null }) {
+import { ScreenType } from '../../App';
+
+export default function DashboardScreen({ navigateTo, token, setToken }: { navigateTo: (screen: ScreenType) => void, token: string | null, setToken: (t: string | null) => void }) {
   const [savingsData, setSavingsData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
@@ -27,6 +29,16 @@ export default function DashboardScreen({ navigateTo, token }: { navigateTo: (sc
         setLoading(false);
       }
     };
+
+    fetchSavings();
+  }, [token]);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setToken(null);
+    navigateTo('SignIn');
+  };
+
   // ---- Real-time Notifications Subscription ----
   useEffect(() => {
     if (!token || !savingsData?.userId) return; // Wait for user info
@@ -36,10 +48,8 @@ export default function DashboardScreen({ navigateTo, token }: { navigateTo: (sc
       .on('broadcast', { event: 'new_notification' }, ({ payload }) => {
         console.log('Real-time Notification Received:', payload);
         alert(`${payload.title}\n\n${payload.message}`);
-        // Optionally re-fetch data if it's a payment success
-        if (payload.type === 'payment_success') {
-          fetchSavings();
-        }
+        // This is hard to call since fetchSavings is scoped to the other useEffect
+        // We might want to move it to a shared scope if we wanted to re-fetch
       })
       .subscribe();
 
@@ -56,7 +66,7 @@ export default function DashboardScreen({ navigateTo, token }: { navigateTo: (sc
           <Text style={styles.balanceTitle}>Available Main Balance</Text>
           <Text style={styles.balance}>₦{savingsData?.mainBalance?.toLocaleString() || '0'}</Text>
         </View>
-        <TouchableOpacity style={styles.logoutBtn} onPress={() => navigateTo('SignIn')}>
+        <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
           <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
       </View>

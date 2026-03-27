@@ -33,8 +33,11 @@ export async function processNotificationJob(job: Job) {
           if (user.phone) await sendSms(user.phone, message);
           break;
         case 'push':
-          // Future: Supabase Realtime / Firebase
-          logger.info({ userId, title }, 'Push notification triggered');
+          if (user.pushToken) {
+            await sendPushNotification(user.pushToken, title, message);
+          } else {
+            logger.info({ userId }, 'Push notification triggered but no token found');
+          }
           break;
         default:
           logger.warn({ channel }, 'Unsupported notification channel');
@@ -55,5 +58,33 @@ export async function processNotificationJob(job: Job) {
   } catch (error: any) {
     logger.error({ jobId: job.id, error: error.message }, 'Notification job failed');
     throw error;
+  }
+}
+
+async function sendPushNotification(token: string, title: string, body: string) {
+  try {
+    const response = await fetch('https://exp.host/--/api/v2/push/send', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Accept-encoding': 'gzip, deflate',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        to: token,
+        sound: 'default',
+        title: title,
+        body: body,
+        data: { withSome: 'data' },
+      }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+       throw new Error(JSON.stringify(data));
+    }
+    logger.info({ token, title }, 'Push notification sent via Expo');
+  } catch (error: any) {
+    logger.error({ token, error: error.message }, 'Failed to send push notification');
   }
 }

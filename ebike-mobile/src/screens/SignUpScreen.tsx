@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, ScrollView } from 'react-native';
+import { supabase } from '../lib/supabase';
 
-import { Platform } from 'react-native';
+import { ScreenType } from '../../App';
 
-const API_BASE = Platform.OS === 'android' ? 'http://10.0.2.2:3000' : 'http://localhost:3000';
-const API_URL = `${API_BASE}/api/auth/signup`;
-
-export default function SignUpScreen({ navigateTo, setToken }: { navigateTo: (screen: string) => void, setToken: (t: string) => void }) {
+export default function SignUpScreen({ navigateTo, setToken }: { navigateTo: (screen: ScreenType) => void, setToken: (t: string) => void }) {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -21,22 +19,31 @@ export default function SignUpScreen({ navigateTo, setToken }: { navigateTo: (sc
     
     setLoading(true);
     try {
-      const res = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ firstName, lastName, email, password })
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            firstName,
+            lastName,
+          }
+        }
       });
-      const data = await res.json();
       
-      if (res.ok && data.accessToken) {
-        setToken(data.accessToken);
+      if (error) {
+        Alert.alert('Failed', error.message);
+        return;
+      }
+
+      if (data.session) {
+        setToken(data.session.access_token);
         Alert.alert('Success', 'Account created successfully!');
         navigateTo('Dashboard');
       } else {
-        Alert.alert('Failed', data.error || 'Registration failed');
+        Alert.alert('Almost there!', 'Please check your email for a confirmation link.');
       }
     } catch (err) {
-      Alert.alert('Network Error', 'Could not reach server.');
+      Alert.alert('Error', 'An unexpected error occurred during signup.');
     } finally {
       setLoading(false);
     }
