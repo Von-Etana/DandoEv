@@ -64,6 +64,31 @@ export default function AdminDashboard() {
         } catch (e) {}
     };
 
+    const handleLoanAction = async (loanId: string, action: 'approve' | 'reject') => {
+        if (!confirm(`Are you sure you want to ${action} this application?`)) return;
+        
+        try {
+            const res = await fetch(`/api/admin/loans/${loanId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action, adminNotes: `Action performed via dashboard: ${action}` })
+            });
+            
+            if (res.ok) {
+                alert(`Loan ${action}ed successfully`);
+                // Refresh loans
+                const lRes = await fetch('/api/loans');
+                const lData = await lRes.json();
+                setLoans(Array.isArray(lData.data) ? lData.data.reverse() : []);
+            } else {
+                const err = await res.json();
+                alert(`Error: ${err.error || 'Failed to process action'}`);
+            }
+        } catch (e) {
+            alert('Network error');
+        }
+    };
+
     useEffect(() => {
         Promise.all([
             fetch('/api/loans').then(r => r.json()),
@@ -343,8 +368,12 @@ export default function AdminDashboard() {
                                     </div>
 
                                     <div style={{ display: 'flex', gap: '0.5rem', borderTop: '1px solid var(--gray-200)', paddingTop: '1rem' }}>
-                                        <button className="btn btn-sm" style={{ background: 'var(--success)', color: 'var(--white)' }}>✓ Approve</button>
-                                        <button className="btn btn-sm btn-danger">✕ Reject</button>
+                                        <button 
+                                            onClick={() => handleLoanAction(loan.id, 'approve')}
+                                            className="btn btn-sm" style={{ background: 'var(--success)', color: 'var(--white)' }}>✓ Approve</button>
+                                        <button 
+                                            onClick={() => handleLoanAction(loan.id, 'reject')}
+                                            className="btn btn-sm btn-danger">✕ Reject</button>
                                         <button className="btn btn-sm btn-outline">📄 Request Docs</button>
                                         <button className="btn btn-sm btn-ghost">View Details</button>
                                     </div>

@@ -28,6 +28,7 @@ export default function KYCPage() {
     const router = useRouter();
     const [selectedDocType, setSelectedDocType] = useState('');
     const [bvn, setBvn] = useState('');
+    const [nin, setNin] = useState('');
     const [selfieUploaded, setSelfieUploaded] = useState(false);
     const [docUploaded, setDocUploaded] = useState(false);
 
@@ -39,6 +40,7 @@ export default function KYCPage() {
                 if (parsed.kyc) {
                     setSelectedDocType(parsed.kyc.selectedDocType || '');
                     setBvn(parsed.kyc.bvn || '');
+                    setNin(parsed.kyc.nin || '');
                     setSelfieUploaded(parsed.kyc.selfieUploaded || false);
                     setDocUploaded(parsed.kyc.docUploaded || false);
                 }
@@ -120,6 +122,25 @@ export default function KYCPage() {
                     </div>
                 )}
 
+                {/* Identification Numbers */}
+                <div className="card card-elevated" style={{ padding: 'var(--space-6)', borderRadius: 'var(--radius-2xl)', marginBottom: '1rem' }}>
+                    <h3 style={{ fontWeight: 700, marginBottom: '1rem' }}>Identification Numbers</h3>
+                    <div className="flex flex-col gap-4">
+                        <div className="form-group">
+                            <label className="form-label">Bank Verification Number (BVN)</label>
+                            <input className="form-input" placeholder="222XXXXXXXX" maxLength={11}
+                                value={bvn} onChange={e => setBvn(e.target.value.replace(/\D/g, ''))} />
+                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--gray-400)', marginTop: '0.25rem' }}>11 digits required for financial assessment</div>
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">National Identity Number (NIN)</label>
+                            <input className="form-input" placeholder="123XXXXXXXX" maxLength={11}
+                                value={nin} onChange={e => setNin(e.target.value.replace(/\D/g, ''))} />
+                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--gray-400)', marginTop: '0.25rem' }}>11 digits required for identity verification</div>
+                        </div>
+                    </div>
+                </div>
+
                 {/* Selfie Capture */}
                 <div className="card card-elevated" style={{ padding: 'var(--space-6)', borderRadius: 'var(--radius-2xl)', marginBottom: '1rem' }}>
                     <h3 style={{ fontWeight: 700, marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -149,7 +170,7 @@ export default function KYCPage() {
                     <button 
                         onClick={async () => {
                             const saved = JSON.parse(sessionStorage.getItem('bnpl_data') || '{}');
-                            sessionStorage.setItem('bnpl_data', JSON.stringify({ ...saved, kyc: { selectedDocType, bvn, selfieUploaded, docUploaded } }));
+                            sessionStorage.setItem('bnpl_data', JSON.stringify({ ...saved, kyc: { selectedDocType, bvn, nin, selfieUploaded, docUploaded } }));
                             
                             try {
                                 const token = document.cookie.split('token=')[1]?.split(';')[0];
@@ -162,8 +183,8 @@ export default function KYCPage() {
 
                             router.push('/bnpl/financial');
                         }} 
-                        className={`btn btn-primary ${(!docUploaded || !selfieUploaded) ? 'disabled' : ''}`} 
-                        style={{ opacity: (docUploaded && selfieUploaded) ? 1 : 0.5, pointerEvents: (docUploaded && selfieUploaded) ? 'auto' : 'none' }}>
+                        className={`btn btn-primary ${(!docUploaded || !selfieUploaded || bvn.length !== 11 || nin.length !== 11) ? 'disabled' : ''}`} 
+                        style={{ opacity: (docUploaded && selfieUploaded && bvn.length === 11 && nin.length === 11) ? 1 : 0.5, pointerEvents: (docUploaded && selfieUploaded && bvn.length === 11 && nin.length === 11) ? 'auto' : 'none' }}>
                         Continue →
                     </button>
                 </div>

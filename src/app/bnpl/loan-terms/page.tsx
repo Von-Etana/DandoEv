@@ -209,16 +209,44 @@ export default function LoanTermsPage() {
                                 const token = document.cookie.split('token=')[1]?.split(';')[0];
                                 
                                 const payload = { 
-                                    bikeId: bike.id, 
+                                    bikeId: bike.id,
+                                    bikeName: bike.name,
+                                    bikePrice: bike.price,
                                     downPayment: 0,
                                     loanAmount: loanAmount,
                                     interestRate: BNPL_CONFIG.interestRate,
-                                    tenureMonths: selectedTenure,
-                                    guarantors: saved.guarantors || [{ 
-                                        firstName: "Dummy", lastName:"Guarantor", 
-                                        email: "dummy@example.com", phone: "08000000000", 
-                                        relationship: "friend" 
-                                    }] // Provide fallback for schema validation if skipped
+                                    serviceFee: BNPL_CONFIG.processingFee,
+                                    tenure: selectedTenure,
+                                    monthlyRepayment: installmentAmountWithDelivery,
+                                    totalRepayable: totalRepayableWithDelivery,
+                                    // Personal Info
+                                    dateOfBirth: saved.personalInfo?.dateOfBirth,
+                                    address: saved.personalInfo?.address,
+                                    state: saved.personalInfo?.state,
+                                    city: saved.personalInfo?.city,
+                                    employmentStatus: saved.personalInfo?.employmentStatus,
+                                    monthlyIncome: Number(saved.personalInfo?.monthlyIncome),
+                                    employerName: saved.personalInfo?.employerName,
+                                    employerAddress: saved.personalInfo?.employerAddress,
+                                    // KYC
+                                    bvn: saved.kyc?.bvn,
+                                    ninNumber: saved.kyc?.nin,
+                                    // Financial
+                                    bankName: saved.financial?.bankName,
+                                    bankAccountNumber: saved.financial?.accountNumber,
+                                    bankAccountName: saved.financial?.accountName,
+                                    // Guarantors
+                                    guarantors: saved.guarantors?.map((g: any) => ({
+                                        fullName: g.fullName,
+                                        email: g.email || undefined,
+                                        phone: g.phone,
+                                        relationship: g.relationship
+                                    })) || [],
+                                    // Documents
+                                    documents: [
+                                        { type: 'selfie', fileUrl: 'https://placeholder.com/selfie.jpg', fileName: 'selfie.jpg' },
+                                        { type: 'national_id', fileUrl: 'https://placeholder.com/id.jpg', fileName: 'id.jpg' }
+                                    ]
                                 };
                                 
                                 const res = await fetch('/api/loans', { 
