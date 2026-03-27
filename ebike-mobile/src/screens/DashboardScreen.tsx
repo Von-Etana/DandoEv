@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, ActivityIndicator } from 'react-native';
+import { supabase } from '../lib/supabase';
 
 const API_BASE = Platform.OS === 'android' ? 'http://10.0.2.2:3000' : 'http://localhost:3000';
 
@@ -26,8 +27,26 @@ export default function DashboardScreen({ navigateTo, token }: { navigateTo: (sc
         setLoading(false);
       }
     };
-    fetchSavings();
-  }, [token]);
+  // ---- Real-time Notifications Subscription ----
+  useEffect(() => {
+    if (!token || !savingsData?.userId) return; // Wait for user info
+
+    const channel = supabase
+      .channel(`notifications:user:${savingsData.userId}`)
+      .on('broadcast', { event: 'new_notification' }, ({ payload }) => {
+        console.log('Real-time Notification Received:', payload);
+        alert(`${payload.title}\n\n${payload.message}`);
+        // Optionally re-fetch data if it's a payment success
+        if (payload.type === 'payment_success') {
+          fetchSavings();
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [token, savingsData?.userId]);
 
   return (
     <ScrollView style={styles.container}>

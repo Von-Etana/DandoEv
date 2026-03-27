@@ -59,16 +59,33 @@ export async function POST(req: NextRequest) {
 
     // ---- Route by Event Type ----
     switch (event.event) {
-      case PAYSTACK_EVENTS.CHARGE_SUCCESS:
+      case PAYSTACK_EVENTS.CHARGE_SUCCESS: {
+        const data = event.data as any;
+        // Capture reusable authorization_code for future direct debits
+        const auth = data?.authorization;
+        const customerCode = data?.customer?.customer_code;
+        if (auth?.reusable && auth?.authorization_code && data?.customer?.email) {
+          try {
+            await (prisma.user as any).updateMany({
+              where: { email: data.customer.email },
+              data: {
+                paystackAuthCode: auth.authorization_code,
+                ...(customerCode ? { paystackCustomerCode: customerCode } : {}),
+              },
+            });
+            log.info({ email: data.customer.email }, 'Saved Paystack authorization_code for direct debit');
+          } catch (err: any) {
+            log.error({ error: err.message }, 'Failed to save Paystack auth code');
+          }
+        }
+        // Enqueue for async processing (repayment/order confirmation)
+        await enqueuePaymentJob({ eventId, eventType: event.event, payload: event.data });
+        break;
+      }
       case PAYSTACK_EVENTS.TRANSFER_SUCCESS:
       case PAYSTACK_EVENTS.TRANSFER_FAILED:
       case PAYSTACK_EVENTS.REFUND_PROCESSED: {
-        // Enqueue for async processing
-        await enqueuePaymentJob({
-          eventId,
-          eventType: event.event,
-          payload: event.data,
-        });
+        await enqueuePaymentJob({ eventId, eventType: event.event, payload: event.data });
         break;
       }
 

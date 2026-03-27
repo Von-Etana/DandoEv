@@ -69,13 +69,26 @@ export async function enqueuePaymentJob(data: {
   return job.id!;
 }
 
+import { broadcastNotification } from './realtime';
+
 export async function enqueueNotification(data: {
   userId: string;
   type: string;
   title: string;
   message: string;
   channels?: ('email' | 'sms' | 'push')[];
+  payload?: Record<string, any>; // Pass extra data
 }): Promise<string> {
+  // 1. Fire and forget real-time broadcast for active sessions
+  broadcastNotification({
+    userId: data.userId,
+    type: data.type,
+    title: data.title,
+    message: data.message,
+    data: data.payload,
+  }).catch(err => logger.error({ error: err.message }, 'Real-time broadcast failed in enqueueNotification'));
+
+  // 2. Add to background worker queue for delivery (Email, Push, SMS)
   const queue = getQueue(QUEUE_NAMES.NOTIFICATION);
   const job = await queue.add('send-notification', data);
   return job.id!;

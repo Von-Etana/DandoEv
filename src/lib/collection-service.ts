@@ -2,6 +2,7 @@ import prisma from './prisma';
 import logger from './logger';
 import { lockSavings } from './wallet';
 import { Prisma } from '@prisma/client';
+import { chargePaystackAuthorization } from './paystack';
 
 /**
  * Sweeps all pending DailySaving records for a given date (default today).
@@ -38,36 +39,62 @@ export async function runDailySavingsSweep(targetDate: Date = new Date()) {
 
         for (const record of pendingSavings) {
             try {
-                // If user has enough balance, collect it
-                if (record.user.wallet && Number(record.user.wallet.mainBalance) >= Number(record.amount)) {
-                    await prisma.$transaction(async (tx) => {
-                        // 1. Debit wallet and credit locked savings
-                        await lockSavings(
-                            tx,
-                            record.userId,
-                            Number(record.amount),
-                            `SAV-${record.id}`,
-                            `Daily Savings Collection: ${record.date.toISOString().split('T')[0]}`
-                        );
+                const wallet = record.user.wallet;
+                const walletBalance = wallet ? Number(wallet.mainBalance) : 0;
+                const amount = Number(record.amount);
 
-                        // 2. Mark record as collected
+                // --- Path 1: Sufficient wallet balance ---
+                if (walletBalance >= amount) {
+                    await prisma.$transaction(async (tx) => {
+                        await lockSavings(tx, record.userId, amount, `SAV-${record.id}`, `Daily Savings: ${record.date.toISOString().split('T')[0]}`);
                         await tx.dailySaving.update({
                             where: { id: record.id },
-                            data: { 
-                                status: 'collected',
-                                paymentRef: `WALLET-AUTO-${record.id}`
-                            }
+                            data: { status: 'collected', paymentRef: `WALLET-AUTO-${record.id}` }
                         });
                     });
                     collectedCount++;
                 } else {
-                    // Mark as missed if balance is low
-                    await prisma.dailySaving.update({
-                        where: { id: record.id },
-                        data: { status: 'missed' }
-                    });
-                    missedCount++;
-                    log.warn({ userId: record.userId, recordId: record.id }, 'Insufficient balance for daily savings collection');
+                    // --- Path 2: Try Paystack direct debit (card on file) ---
+                    const userWithCard = await (prisma.user as any).findUnique({ 
+                        where: { id: record.userId }, 
+                        select: { email: true, paystackAuthCode: true } 
+                    }) as any;
+
+                    if (userWithCard?.paystackAuthCode) {
+                        try {
+                            const charge = await chargePaystackAuthorization({
+                                authorization_code: userWithCard.paystackAuthCode,
+                                email: userWithCard.email,
+                                amount: amount * 100, // Paystack uses kobo
+                                reference: `SAV-PSK-${record.id}`,
+                                metadata: { saving_record_id: record.id, type: 'daily_savings' }
+                            });
+
+                            if (charge.status === 'success') {
+                                // Paystack charged — credit the locked savings wallet
+                                await prisma.$transaction(async (tx) => {
+                                    await lockSavings(tx, record.userId, amount, charge.reference, `Daily Savings (Paystack): ${record.date.toISOString().split('T')[0]}`);
+                                    await tx.dailySaving.update({
+                                        where: { id: record.id },
+                                        data: { status: 'collected', paymentRef: charge.reference }
+                                    });
+                                });
+                                collectedCount++;
+                                log.info({ userId: record.userId, reference: charge.reference }, 'Daily saving collected via Paystack direct debit');
+                            } else {
+                                throw new Error(`Charge status: ${charge.status}`);
+                            }
+                        } catch (chargeErr: any) {
+                            log.warn({ userId: record.userId, error: chargeErr.message }, 'Paystack direct debit failed — marking as missed');
+                            await prisma.dailySaving.update({ where: { id: record.id }, data: { status: 'missed' } });
+                            missedCount++;
+                        }
+                    } else {
+                        // --- Path 3: No card on file — mark as missed ---
+                        await prisma.dailySaving.update({ where: { id: record.id }, data: { status: 'missed' } });
+                        missedCount++;
+                        log.warn({ userId: record.userId }, 'No card on file and insufficient wallet balance — saving missed');
+                    }
                 }
             } catch (err: any) {
                 log.error({ error: err.message, recordId: record.id }, 'Failed to process daily saving record');

@@ -13,10 +13,10 @@ export const GET = withRoles(
     try {
       const configs = await prisma.systemConfig.findMany();
       // format as dictionary for easy access
-      const configMap = configs.reduce((acc: Record<string, string>, c) => {
+      const configMap = configs.reduce((acc: Record<string, string>, c: { key: string; value: string }) => {
         acc[c.key] = c.value;
         return acc;
-      }, {});
+      }, {} as Record<string, string>);
 
       return NextResponse.json({ success: true, data: configMap });
     } catch (error) {

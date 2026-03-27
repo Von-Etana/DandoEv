@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@prisma/client": "^7.5.0",
+    "@supabase/supabase-js": "^2.100.1",
     "bcryptjs": "^2.4.3",
     "bullmq": "^5.71.0",
     "cloudinary": "^2.9.0",

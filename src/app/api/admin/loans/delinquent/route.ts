@@ -26,7 +26,7 @@ export const GET = withRoles(
 
       // Calculate total at-risk amount
       const totalAtRisk = overdueRepayments.reduce(
-        (acc, r) => acc + Number(r.amount) - Number(r.amountPaid),
+        (acc: number, r: any) => acc + Number(r.amount) - Number(r.amountPaid),
         0
       );
 

@@ -103,7 +103,7 @@ export default function AdminDashboard() {
         fetchConfig();
     }, []);
 
-    const totalRev = orders.reduce((acc, o) => acc + (o.totalAmount || 0), 0) + loans.reduce((acc, l) => acc + (l.totalAmount || 0), 0);
+    const totalRev = orders.reduce((acc: number, o: any) => acc + (o.totalAmount || 0), 0) + loans.reduce((acc: number, l: any) => acc + (l.totalAmount || 0), 0);
     const pendingApps = loans.filter(l => l.status === 'under_review' || l.status === 'pending').length;
     const activeLoansCount = loans.filter(l => l.status === 'active' || l.status === 'approved').length;
 
@@ -261,7 +261,7 @@ export default function AdminDashboard() {
                                 <h3 style={{ fontWeight: 700, marginBottom: '1.5rem' }}>Loans by Status</h3>
                                 <div className="flex flex-col gap-3">
                                     {stats.loansByStatus.map(l => {
-                                        const total = stats.loansByStatus.reduce((a, b) => a + b.count, 0);
+                                        const total = stats.loansByStatus.reduce((a: number, b: any) => a + b.count, 0);
                                         const pct = (l.count / total) * 100;
                                         const color = l.status === 'Active' ? 'var(--success)' : l.status === 'Pending' ? 'var(--warning)' : l.status === 'Completed' ? 'var(--info)' : l.status === 'Defaulted' ? 'var(--danger)' : 'var(--gray-400)';
                                         return (
