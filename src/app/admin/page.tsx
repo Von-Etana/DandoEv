@@ -9,7 +9,7 @@ import { APP_NAME } from '@/lib/constants';
 import { LayoutDashboard, ClipboardList, Bike, Wallet, AlertTriangle, TrendingUp, Users, Zap, X, Menu, XCircle, Mail, Scale, MessageSquare, UserCheck, Lock, Calendar, CheckCircle, Clock, BarChart2, Star } from 'lucide-react';
 import BikeModal from '@/components/admin/BikeModal';
 
-type Tab = 'overview' | 'applications' | 'bikes' | 'payments' | 'defaults' | 'reports' | 'users' | 'settings';
+type Tab = 'overview' | 'applications' | 'bikes' | 'payments' | 'defaults' | 'reports' | 'users' | 'settings' | 'reconciliation' | 'compliance' | 'activity';
 
 export default function AdminDashboard() {
     const [activeTab, setActiveTab] = useState<Tab>('overview');
@@ -26,6 +26,65 @@ export default function AdminDashboard() {
     const [delinquentData, setDelinquentData] = useState<{ totalAtRisk: number; repayments: any[] }>({ totalAtRisk: 0, repayments: [] });
     const [systemConfig, setSystemConfig] = useState<Record<string, string>>({});
     const [configLoading, setConfigLoading] = useState(false);
+
+    // New API States
+    const [adminStats, setAdminStats] = useState<any>(null);
+    const [userList, setUserList] = useState<any[]>([]);
+    const [reconData, setReconData] = useState<any>({ logs: [], settlements: [] });
+    const [kycDocs, setKycDocs] = useState<any[]>([]);
+    const [auditLogs, setAuditLogs] = useState<any[]>([]);
+    const [statsLoading, setStatsLoading] = useState(true);
+
+    const fetchAdminStats = async () => {
+        setStatsLoading(true);
+        try {
+            const r = await fetch('/api/admin/stats');
+            if (r.ok) {
+                const d = await r.json();
+                setAdminStats(d.data);
+            }
+        } catch (e) {} finally { setStatsLoading(false); }
+    };
+
+    const fetchUserList = async () => {
+        try {
+            const r = await fetch('/api/admin/users');
+            if (r.ok) {
+                const d = await r.json();
+                setUserList(d.data);
+            }
+        } catch (e) {}
+    };
+
+    const fetchReconData = async () => {
+        try {
+            const r = await fetch('/api/admin/reconciliation');
+            if (r.ok) {
+                const d = await r.json();
+                setReconData(d);
+            }
+        } catch (e) {}
+    };
+
+    const fetchKycDocs = async () => {
+        try {
+            const r = await fetch('/api/admin/kyc?status=pending');
+            if (r.ok) {
+                const d = await r.json();
+                setKycDocs(d.data);
+            }
+        } catch (e) {}
+    };
+
+    const fetchAuditLogs = async () => {
+        try {
+            const r = await fetch('/api/admin/audit-logs');
+            if (r.ok) {
+                const d = await r.json();
+                setAuditLogs(d.data);
+            }
+        } catch (e) {}
+    };
 
     const fetchBikes = async () => {
         setLoadingBikes(true);
@@ -101,6 +160,11 @@ export default function AdminDashboard() {
         fetchBikes();
         fetchDelinquent();
         fetchConfig();
+        fetchAdminStats();
+        fetchUserList();
+        fetchReconData();
+        fetchKycDocs();
+        fetchAuditLogs();
     }, []);
 
     const totalRev = orders.reduce((acc: number, o: any) => acc + (o.totalAmount || 0), 0) + loans.reduce((acc: number, l: any) => acc + (l.totalAmount || 0), 0);
@@ -109,20 +173,26 @@ export default function AdminDashboard() {
 
     const stats = {
         ...mockDashboardStats,
-        totalRevenue: mockDashboardStats.totalRevenue + totalRev,
-        pendingApplications: pendingApps,
-        activeLoans: mockDashboardStats.activeLoans + activeLoansCount,
-        totalUsers: mockDashboardStats.totalUsers + loans.length + orders.length,
+        totalRevenue: adminStats?.totalRevenue || 0,
+        pendingApplications: adminStats?.pendingApplications || 0,
+        activeLoans: adminStats?.activeLoans || 0,
+        totalUsers: adminStats?.totalUsers || 0,
+        defaultRate: adminStats?.defaultRate || 0,
+        loansByStatus: adminStats?.loansByStatus || [],
+        recentUsers: adminStats?.recentUsers || [],
     };
 
     const sidebarItems: { id: Tab; icon: ReactNode; label: string }[] = [
         { id: 'overview', icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
         { id: 'applications', icon: <ClipboardList size={18} />, label: 'Applications' },
+        { id: 'compliance', icon: <UserCheck size={18} />, label: 'Compliance' },
         { id: 'bikes', icon: <Bike size={18} />, label: 'Bikes' },
         { id: 'payments', icon: <Wallet size={18} />, label: 'Payments' },
+        { id: 'reconciliation', icon: <Scale size={18} />, label: 'Reconciliation' },
         { id: 'defaults', icon: <AlertTriangle size={18} />, label: 'Defaults' },
         { id: 'reports', icon: <TrendingUp size={18} />, label: 'Reports' },
         { id: 'users', icon: <Users size={18} />, label: 'Users' },
+        { id: 'activity', icon: <Clock size={18} />, label: 'Audit Logs' },
         { id: 'settings', icon: <Lock size={18} />, label: 'Settings' },
     ];
 
@@ -199,7 +269,10 @@ export default function AdminDashboard() {
                                 {activeTab === 'defaults' && 'Manage defaults and collections'}
                                 {activeTab === 'reports' && 'View analytics and reports'}
                                 {activeTab === 'users' && 'Manage customer accounts'}
-                                {activeTab === 'settings' && 'Manage Global Risk Controller setups Parameters constants setup'}
+                                {activeTab === 'reconciliation' && 'Monitor payment settlements and matching'}
+                                {activeTab === 'compliance' && 'Verify customer identity documents'}
+                                {activeTab === 'activity' && 'System audit trail and security logs'}
+                                {activeTab === 'settings' && 'Manage Global System Parameters'}
                             </p>
                         </div>
                     </div>
@@ -260,7 +333,7 @@ export default function AdminDashboard() {
                             <div className="card card-elevated" style={{ padding: 'var(--space-6)', borderRadius: 'var(--radius-2xl)' }}>
                                 <h3 style={{ fontWeight: 700, marginBottom: '1.5rem' }}>Loans by Status</h3>
                                 <div className="flex flex-col gap-3">
-                                    {stats.loansByStatus.map(l => {
+                                    {stats.loansByStatus.map((l: any) => {
                                         const total = stats.loansByStatus.reduce((a: number, b: any) => a + b.count, 0);
                                         const pct = (l.count / total) * 100;
                                         const color = l.status === 'Active' ? 'var(--success)' : l.status === 'Pending' ? 'var(--warning)' : l.status === 'Completed' ? 'var(--info)' : l.status === 'Defaulted' ? 'var(--danger)' : 'var(--gray-400)';
@@ -291,12 +364,12 @@ export default function AdminDashboard() {
                                         <tr><th>User</th><th>Action</th><th>Details</th><th>Time</th></tr>
                                     </thead>
                                     <tbody>
-                                        {mockAuditLogs.map(log => (
+                                        {auditLogs.slice(0, 10).map(log => (
                                             <tr key={log.id}>
-                                                <td style={{ fontWeight: 600 }}>{log.userName}</td>
+                                                <td style={{ fontWeight: 600 }}>{log.user?.firstName} {log.user?.lastName}</td>
                                                 <td><span className="badge badge-primary">{log.action.replace(/_/g, ' ')}</span></td>
                                                 <td style={{ maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{log.details}</td>
-                                                <td style={{ whiteSpace: 'nowrap' }}>{timeAgo(log.timestamp)}</td>
+                                                <td style={{ whiteSpace: 'nowrap' }}>{timeAgo(log.createdAt)}</td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -509,16 +582,25 @@ export default function AdminDashboard() {
                                                 <td style={{ fontWeight: 700, color: 'var(--danger)' }}>{formatNaira(r.amount - r.amountPaid)}</td>
                                                 <td><span className="badge badge-warning">{r.daysOverdue} days</span></td>
                                                 <td>
-                                                    <button className="btn btn-ghost btn-sm" onClick={async () => {
-                                                        const overrideReason = prompt('Enter offline clear setup reason triggers validation:');
-                                                        if (overrideReason) {
-                                                           await fetch(`/api/admin/repayments/${r.repaymentId}/reconcile`, {
-                                                              method: 'POST',
-                                                              body: JSON.stringify({ overrideReason })
-                                                           });
-                                                           fetchDelinquent();
-                                                        }
-                                                    }}>Clear Debt Offline</button>
+                                                    <div className="flex gap-2">
+                                                        <button 
+                                                            onClick={async () => {
+                                                                if (!confirm('Attempt matching record to card auto debit?')) return;
+                                                                const res = await fetch(`/api/admin/repayments/${r.repaymentId}/collect`, { method: 'POST' });
+                                                                if (res.ok) fetchDelinquent();
+                                                            }}
+                                                            className="btn btn-primary btn-sm">Collect Now</button>
+                                                        <button className="btn btn-ghost btn-sm" onClick={async () => {
+                                                            const overrideReason = prompt('Enter offline clear setup reason:');
+                                                            if (overrideReason) {
+                                                               await fetch(`/api/admin/repayments/${r.repaymentId}/reconcile`, {
+                                                                  method: 'POST',
+                                                                  body: JSON.stringify({ overrideReason })
+                                                               });
+                                                               fetchDelinquent();
+                                                            }
+                                                        }}>Offline Clear</button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))}
@@ -610,11 +692,9 @@ export default function AdminDashboard() {
                         <div className="card card-elevated" style={{ padding: 'var(--space-6)', borderRadius: 'var(--radius-2xl)' }}>
                             <h3 style={{ fontWeight: 700, marginBottom: '1rem' }}>Export Reports</h3>
                             <div className="flex gap-3 flex-wrap">
-                                <button className="btn btn-outline btn-sm flex items-center justify-center gap-1"><BarChart2 size={14} /> Active Loans (CSV)</button>
-                                <button className="btn btn-outline btn-sm flex items-center justify-center gap-1"><TrendingUp size={14} /> Revenue Report (PDF)</button>
-                                <button className="btn btn-outline btn-sm flex items-center justify-center gap-1"><Users size={14} /> Customer Data (CSV)</button>
-                                <button className="btn btn-outline btn-sm flex items-center justify-center gap-1"><AlertTriangle size={14} /> Default Report (PDF)</button>
-                                <button className="btn btn-outline btn-sm flex items-center justify-center gap-1"><Bike size={14} /> Bike Sales (CSV)</button>
+                                <button onClick={() => window.open('/api/admin/reports/export?type=loans')} className="btn btn-outline btn-sm flex items-center justify-center gap-1"><BarChart2 size={14} /> Active Loans (CSV)</button>
+                                <button onClick={() => window.open('/api/admin/reports/export?type=repayments')} className="btn btn-outline btn-sm flex items-center justify-center gap-1"><TrendingUp size={14} /> Repayments (CSV)</button>
+                                <button onClick={() => window.open('/api/admin/reports/export?type=users')} className="btn btn-outline btn-sm flex items-center justify-center gap-1"><Users size={14} /> Customer Data (CSV)</button>
                             </div>
                         </div>
                     </div>
@@ -642,21 +722,131 @@ export default function AdminDashboard() {
                                     <tr><th>Name</th><th>Email</th><th>Phone</th><th>Status</th><th>KYC</th><th>Joined</th><th>Actions</th></tr>
                                 </thead>
                                 <tbody>
-                                    {[
-                                        { name: 'Adebayo Johnson', email: 'adebayo.j@email.com', phone: '08012345678', status: 'active_bnpl', kyc: 'verified', joined: '2025-10-15' },
-                                        { name: 'Chioma Okafor', email: 'chioma.o@email.com', phone: '09098765432', status: 'bnpl_applicant', kyc: 'pending', joined: '2026-01-05' },
-                                        { name: 'Emeka Nnamdi', email: 'emeka.n@email.com', phone: '07012349876', status: 'registered', kyc: 'pending', joined: '2026-02-01' },
-                                        { name: 'Fatima Bello', email: 'fatima.b@email.com', phone: '08145678901', status: 'active_bnpl', kyc: 'verified', joined: '2025-09-20' },
-                                        { name: 'Olumide Adekunle', email: 'olumide.a@email.com', phone: '09034567890', status: 'defaulted', kyc: 'verified', joined: '2025-08-12' },
-                                    ].map(u => (
-                                        <tr key={u.email}>
-                                            <td style={{ fontWeight: 600 }}>{u.name}</td>
+                                    {userList.map(u => (
+                                        <tr key={u.id}>
+                                            <td style={{ fontWeight: 600 }}>{u.firstName} {u.lastName}</td>
                                             <td>{u.email}</td>
                                             <td>{u.phone}</td>
-                                            <td><span className={`badge ${getStatusColor(u.status)}`}>{capitalize(u.status)}</span></td>
-                                            <td><span className={`badge ${getStatusColor(u.kyc)}`}>{capitalize(u.kyc)}</span></td>
-                                            <td>{formatDate(u.joined)}</td>
+                                            <td><span className={`badge ${getStatusColor(u.customerStatus)}`}>{capitalize(u.customerStatus)}</span></td>
+                                            <td><span className={`badge ${getStatusColor(u.kycStatus)}`}>{capitalize(u.kycStatus)}</span></td>
+                                            <td>{formatDate(u.createdAt)}</td>
                                             <td><button className="btn btn-ghost btn-sm" style={{ fontSize: 'var(--text-xs)' }}>View</button></td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
+
+                {/* ========== RECONCILIATION TAB ========== */}
+                {activeTab === 'reconciliation' && (
+                    <div className="animate-fade-in">
+                        <div className="grid grid-2" style={{ gap: '1.5rem', marginBottom: '2rem' }}>
+                            <div className="card card-elevated" style={{ padding: '1.5rem' }}>
+                                <h3 style={{ fontWeight: 700, marginBottom: '1rem' }}>Matching Logs</h3>
+                                <div className="flex flex-col gap-2">
+                                    {(reconData?.logs || []).map((log: any) => (
+                                        <div key={log.id} style={{ padding: '0.75rem', background: 'var(--gray-50)', borderRadius: 'var(--radius-lg)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <div>
+                                                <div style={{ fontSize: 'var(--text-xs)', color: 'var(--gray-500)' }}>{formatDate(log.startedAt)}</div>
+                                                <div style={{ fontWeight: 600, fontSize: 'var(--text-sm)' }}>Matched {log.totalMatched}/{log.totalProcessed}</div>
+                                            </div>
+                                            <span className={`badge ${log.totalFlagged > 0 ? 'badge-danger' : 'badge-success'}`}>
+                                                {log.totalFlagged} Flags
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                            <div className="card card-elevated" style={{ padding: '1.5rem' }}>
+                                <h3 style={{ fontWeight: 700, marginBottom: '1rem' }}>Recent Settlements</h3>
+                                <div className="flex flex-col gap-2">
+                                    {(reconData?.settlements || []).map((s: any) => (
+                                        <div key={s.id} style={{ padding: '0.75rem', background: 'var(--gray-50)', borderRadius: 'var(--radius-lg)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <div>
+                                                <div style={{ fontWeight: 600, fontSize: 'var(--text-sm)' }}>{formatNaira(s.amount)}</div>
+                                                <div style={{ fontSize: 'var(--text-xs)', color: 'var(--gray-500)' }}>{s.provider.toUpperCase()} • {formatDate(s.payoutDate)}</div>
+                                            </div>
+                                            <span className="badge badge-primary">{s.status}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* ========== COMPLIANCE TAB ========== */}
+                {activeTab === 'compliance' && (
+                    <div className="animate-fade-in">
+                        <div className="flex flex-col gap-4">
+                            {kycDocs.length === 0 && <div className="text-center py-10 text-gray-400">No pending documents for review.</div>}
+                            {kycDocs.map((doc: any) => (
+                                <div key={doc.id} className="card card-elevated" style={{ padding: '1.5rem', display: 'flex', gap: '1.5rem' }}>
+                                    <div style={{ width: '200px', height: '140px', background: 'var(--gray-100)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
+                                        <img src={doc.fileUrl} alt="KYC Document" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    </div>
+                                    <div style={{ flex: 1 }}>
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <h4 style={{ fontWeight: 700 }}>{capitalize(doc.type.replace(/_/g, ' '))}</h4>
+                                                <p style={{ fontSize: 'var(--text-sm)', color: 'var(--gray-500)' }}>
+                                                    User: {doc.user.firstName} {doc.user.lastName} ({doc.user.email})
+                                                </p>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <button 
+                                                    onClick={async () => {
+                                                        const res = await fetch(`/api/admin/kyc/${doc.id}`, {
+                                                            method: 'PATCH',
+                                                            headers: { 'Content-Type': 'application/json' },
+                                                            body: JSON.stringify({ status: 'verified' })
+                                                        });
+                                                        if (res.ok) fetchKycDocs();
+                                                    }}
+                                                    className="btn btn-success btn-sm">Verified</button>
+                                                <button 
+                                                    onClick={async () => {
+                                                        const reason = prompt('Rejection reason:');
+                                                        if (reason) {
+                                                            await fetch(`/api/admin/kyc/${doc.id}`, {
+                                                                method: 'PATCH',
+                                                                headers: { 'Content-Type': 'application/json' },
+                                                                body: JSON.stringify({ status: 'rejected', rejectionReason: reason })
+                                                            });
+                                                            fetchKycDocs();
+                                                        }
+                                                    }}
+                                                    className="btn btn-danger btn-sm">Reject</button>
+                                            </div>
+                                        </div>
+                                        <div style={{ marginTop: '1rem' }}>
+                                            <a href={doc.fileUrl} target="_blank" className="btn btn-ghost btn-sm">View Full Document</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* ========== ACTIVITY LOGS TAB ========== */}
+                {activeTab === 'activity' && (
+                    <div className="animate-fade-in">
+                        <div className="table-container" style={{ borderRadius: 'var(--radius-2xl)' }}>
+                            <table className="table">
+                                <thead>
+                                    <tr><th>User</th><th>Action</th><th>Details</th><th>IP Address</th><th>Time</th></tr>
+                                </thead>
+                                <tbody>
+                                    {auditLogs.map(log => (
+                                        <tr key={log.id}>
+                                            <td style={{ fontWeight: 600 }}>{log.user?.firstName} {log.user?.lastName}</td>
+                                            <td><span className="badge badge-primary">{log.action.replace(/_/g, ' ')}</span></td>
+                                            <td style={{ maxWidth: '400px' }}>{log.details}</td>
+                                            <td style={{ fontSize: 'var(--text-xs)', color: 'var(--gray-400)' }}>{log.ipAddress || 'internal'}</td>
+                                            <td style={{ whiteSpace: 'nowrap' }}>{timeAgo(log.createdAt)}</td>
                                         </tr>
                                     ))}
                                 </tbody>

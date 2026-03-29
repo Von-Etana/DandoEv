@@ -159,11 +159,11 @@ model User {
   // ---- Paystack Integration ----
   paystackCustomerCode String?     // Paystack customer code
   paystackAuthCode  String?        // Saved authorization_code for recurring charges
+  pushToken         String?        // FCM/Expo push token
+  pushPlatform      String?        // 'expo', 'fcm', 'apns'
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
   lastLoginAt       DateTime?
-  pushToken         String?
-  pushPlatform      String?        // 'expo', 'fcm', 'apns'
 
   // Relations
   loans             Loan[]
@@ -178,6 +178,7 @@ model User {
   idempotencyKeys   IdempotencyKey[]
   guarantorsCreated Guarantor[]    @relation("ApplicantGuarantors")
   wallet            Wallet?
+  guarantorAccount  Guarantor?    @relation("GuarantorUser")
 
   @@index([email])
   @@index([role])
@@ -283,6 +284,7 @@ model Loan {
   transactions PaymentTransaction[]
   dailySavings DailySaving[]
   documents    KycDocument[]
+  recoveryCase RecoveryCase?
 
   @@index([userId])
   @@index([status])
@@ -319,6 +321,7 @@ model Guarantor {
   id              String          @id @default(uuid())
   loanId          String
   applicantUserId String
+  userId          String?         // Link to their own User account if they have one
   fullName        String
   email           String?
   phone           String?
@@ -332,8 +335,59 @@ model Guarantor {
   // Relations
   loan      Loan @relation(fields: [loanId], references: [id])
   applicant User @relation("ApplicantGuarantors", fields: [applicantUserId], references: [id])
+  user      User? @relation("GuarantorUser", fields: [userId], references: [id])
 
   @@map("guarantors")
+}
+
+model RecoveryCase {
+  id             String           @id @default(uuid())
+  loanId         String           @unique
+  status         RecoveryStatus   @default(active)
+  stage          RecoveryStage    @default(initial_notice)
+  totalAtRisk    Decimal          @db.Decimal(15, 2)
+  assignedOfficer String?
+  openedAt       DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  closedAt       DateTime?
+  resolution     String?          // settled, legal_action, written_off
+
+  // Relations
+  loan           Loan             @relation(fields: [loanId], references: [id])
+  activities     RecoveryActivity[]
+
+  @@map("recovery_cases")
+}
+
+model RecoveryActivity {
+  id             String           @id @default(uuid())
+  caseId         String
+  action         String           // call, email, sms, demand_letter, site_visit
+  actorId        String?          // admin who performed the action
+  notes          String?
+  metadata       Json?            // results, external refs
+  createdAt      DateTime         @default(now())
+
+  // Relations
+  recoveryCase   RecoveryCase     @relation(fields: [caseId], references: [id])
+
+  @@map("recovery_activities")
+}
+
+enum RecoveryStatus {
+  active
+  on_hold
+  settled
+  closed
+}
+
+enum RecoveryStage {
+  initial_notice
+  final_warning
+  guarantor_escalation
+  demand_letter
+  legal_action
+  written_off
 }
 
 model KycDocument {
@@ -461,6 +515,7 @@ model PaymentTransaction {
   metadata       Json?
   createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt
+  reconciledAt   DateTime?
 
   // Relations
   user  User   @relation(fields: [userId], references: [id])
@@ -530,4 +585,34 @@ model SystemConfig {
   updatedAt DateTime @updatedAt
 
   @@map("system_configs")
+}
+
+model Settlement {
+  id             String   @id @default(uuid())
+  provider       String   // paystack, mono
+  providerRef    String   @unique // Provider's payout ID
+  amount         Decimal  @db.Decimal(15, 2)
+  currency       String   @default("NGN")
+  status         String   // pending, successful, failed
+  payoutDate     DateTime
+  processedAt    DateTime?
+  transactionIds String[] // IDs of transactions included in this settlement
+  createdAt      DateTime @default(now())
+
+  @@map("settlements")
+}
+
+model ReconciliationLog {
+  id             String   @id @default(uuid())
+  jobId          String
+  startedAt      DateTime @default(now())
+  completedAt    DateTime?
+  status         String   // processing, completed, failed
+  totalProcessed Int      @default(0)
+  totalMatched   Int      @default(0)
+  totalFlagged   Int      @default(0)
+  details        Json?    // Summary of discrepancies
+  errors         String?
+  
+  @@map("reconciliation_logs")
 }

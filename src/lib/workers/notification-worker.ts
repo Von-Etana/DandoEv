@@ -10,7 +10,7 @@ export async function processNotificationJob(job: Job) {
     type: string;
     title: string;
     message: string;
-    channels?: ('email' | 'sms' | 'push')[];
+    channels?: ('email' | 'sms' | 'push' | 'whatsapp')[];
   };
 
   logger.info({ jobId: job.id, userId, type }, 'Processing notification job');
@@ -33,10 +33,16 @@ export async function processNotificationJob(job: Job) {
           if (user.phone) await sendSms(user.phone, message);
           break;
         case 'push':
-          if (user.pushToken) {
-            await sendPushNotification(user.pushToken, title, message);
+          if ((user as any).pushToken) {
+            await sendPushNotification((user as any).pushToken, title, message);
           } else {
             logger.info({ userId }, 'Push notification triggered but no token found');
+          }
+          break;
+        case 'whatsapp':
+          if (user.phone) {
+            const { sendWhatsApp } = await import('../termii');
+            await sendWhatsApp(user.phone, message);
           }
           break;
         default:

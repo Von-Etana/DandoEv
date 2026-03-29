@@ -1,4 +1,4 @@
-import { runDailySavingsSweep } from '../collection-service';
+import { runDailySavingsSweep, runRepaymentCollectionSweep } from '../collection-service';
 import { runOverdueSweep } from '../overdue-service';
 import { runRepaymentReminders } from '../reminder-service';
 import logger from '../logger';
@@ -19,6 +19,10 @@ export async function performDailyOps() {
         // 1. Collect daily savings from user wallets
         const savingsResult = await runDailySavingsSweep(now);
         log.info(savingsResult, 'Daily savings sweep finished');
+
+        // 1.5 Collect BNPL Monthly repayments
+        const collectionResult = await runRepaymentCollectionSweep(now);
+        log.info(collectionResult, 'BNPL repayment collection sweep finished');
 
         // 2. Detect overdue payments and apply fees
         const overdueCount = await runOverdueSweep(now);

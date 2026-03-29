@@ -76,7 +76,7 @@ export async function enqueueNotification(data: {
   type: string;
   title: string;
   message: string;
-  channels?: ('email' | 'sms' | 'push')[];
+  channels?: ('email' | 'sms' | 'push' | 'whatsapp')[];
   payload?: Record<string, any>; // Pass extra data
 }): Promise<string> {
   // 1. Fire and forget real-time broadcast for active sessions

@@ -143,3 +143,50 @@ export async function creditLockedSavings(
 
   return groupId;
 }
+
+/**
+ * Debit Wallet (Main) for a BNPL Loan Repayment.
+ * Decrements Main Wallet liability and credits platform loan asset/revenue.
+ */
+export async function debitWalletForRepayment(
+  tx: TxClient,
+  userId: string,
+  amount: number,
+  repaymentId: string,
+  details?: string
+) {
+  const wallet = await ensureWallet(tx, userId);
+
+  if (Number(wallet.mainBalance) < amount) {
+    throw new Error('Insufficient funds in wallet for repayment');
+  }
+
+  // Update balance
+  await tx.wallet.update({
+    where: { id: wallet.id },
+    data: {
+      mainBalance: { decrement: amount },
+    },
+  });
+
+  // Post ledger entries
+  const groupId = crypto.randomUUID();
+  await postLedgerEntries(tx, [
+    {
+      account: `wallet_main:${userId}`,
+      debit: amount,
+      credit: 0,
+      reference: repaymentId,
+      details: details || 'BNPL Installment Payment',
+    },
+    {
+      account: `platform_revenue:loan_repayment`,
+      debit: 0,
+      credit: amount,
+      reference: repaymentId,
+      details: details || 'BNPL Installment Payment',
+    },
+  ], groupId);
+
+  return groupId;
+}

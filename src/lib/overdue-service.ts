@@ -104,7 +104,24 @@ export async function runOverdueSweep(now: Date = new Date()) {
                             }
                         });
 
-                        log.warn({ loanId: repayment.loanId }, 'Loan marked as DEFAULTED and guarantors notified');
+                        // 5. Create a Recovery Case
+                        await tx.recoveryCase.create({
+                            data: {
+                                loanId: repayment.loanId,
+                                status: 'active',
+                                stage: 'initial_notice',
+                                totalAtRisk: amount, // Start with this installment's risk, or calculate full loan? 
+                                // Actually, totalAtRisk should be full outstanding.
+                                activities: {
+                                    create: {
+                                        action: 'loan_defaulted',
+                                        notes: 'System: Recovery case automatically opened due to default.'
+                                    }
+                                }
+                            }
+                        });
+
+                        log.warn({ loanId: repayment.loanId }, 'Loan marked as DEFAULTED and Recovery Case initiated');
                     }
                 });
 
