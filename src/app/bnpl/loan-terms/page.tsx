@@ -177,24 +177,26 @@ export default function LoanTermsPage() {
                 <div className="card card-elevated" style={{ padding: 'var(--space-6)', borderRadius: 'var(--radius-2xl)', marginBottom: '1rem' }}>
                     <h3 style={{ fontWeight: 700, marginBottom: '1rem' }}>Terms & Conditions</h3>
                     <div style={{
-                        maxHeight: '120px', overflow: 'auto', padding: '0.75rem', background: 'var(--gray-50)',
+                        maxHeight: '180px', overflow: 'auto', padding: '1rem', background: 'var(--gray-50)',
                         borderRadius: 'var(--radius-lg)', marginBottom: '1rem',
-                        fontSize: 'var(--text-xs)', color: 'var(--gray-600)', lineHeight: 1.8,
+                        fontSize: '13px', color: 'var(--gray-600)', lineHeight: 1.6,
+                        border: '1px solid var(--gray-200)'
                     }}>
-                        <p>1. I agree to repay the loan amount plus interest and service fees as outlined above.</p>
-                        <p>2. I understand that failure to make timely payments may result in additional fees and/or legal action.</p>
-                        <p>3. I authorize DandoEv to obtain my credit information and perform verification checks.</p>
-                        <p>4. I agree that the financed bike remains collateral until the loan is fully repaid.</p>
-                        <p>5. I acknowledge that DandoEv may enable GPS tracking and/or immobilizer features on financed bikes.</p>
-                        <p>6. Early repayment is allowed with no additional penalties.</p>
-                        <p>7. My guarantors will be contacted in the event of default.</p>
+                        <p style={{ marginBottom: '0.5rem', fontWeight: 600, color: 'var(--gray-800)' }}>Key Terms of Agreement:</p>
+                        <p style={{ marginBottom: '0.4rem' }}>1. I agree that legal ownership of the Asset remains with DandoEv until final payment is made.</p>
+                        <p style={{ marginBottom: '0.4rem' }}>2. I bear full responsibility for the operation, safety, and maintenance of the Asset from delivery.</p>
+                        <p style={{ marginBottom: '0.4rem' }}>3. I shall not sell, transfer, or dispose of the Asset to any third party until all obligations are met.</p>
+                        <p style={{ marginBottom: '0.4rem' }}>4. My obligation to pay is absolute and not affected by any damage to or loss of the Asset.</p>
+                        <p style={{ marginBottom: '0.4rem' }}>5. I authorize DandoEv to initiate recurring debits from my designated payment method.</p>
+                        <p style={{ marginBottom: '0.4rem' }}>6. Failure to pay may result in repossession, penalties, and referral to recovery agencies.</p>
+                        <p>7. I consent to identity verification and credit checks by DandoEv and its partners.</p>
                     </div>
                     <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', cursor: 'pointer' }}>
                         <input type="checkbox" checked={accepted} onChange={e => setAccepted(e.target.checked)}
                             style={{ marginTop: '0.25rem', width: '18px', height: '18px', accentColor: 'var(--primary)' }} />
-                        <span style={{ fontSize: 'var(--text-sm)', color: 'var(--gray-700)' }}>
-                            I have read and agree to the Terms & Conditions, Privacy Policy, and BNPL Agreement.
-                        </span>
+                        <div style={{ fontSize: 'var(--text-sm)', color: 'var(--gray-700)' }}>
+                            I have read and agree to the <Link href="/terms" target="_blank" style={{ color: 'var(--primary)', fontWeight: 600, textDecoration: 'underline' }}>Full Terms & Conditions</Link>, Privacy Policy, and BNPL Agreement.
+                        </div>
                     </label>
                 </div>
 
