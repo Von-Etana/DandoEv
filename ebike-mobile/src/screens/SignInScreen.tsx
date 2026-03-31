@@ -28,6 +28,22 @@ export default function SignInScreen({ navigateTo, setToken }: { navigateTo: (sc
       }
 
       if (data.session) {
+        // Check user role to prevent admin access on mobile
+        const { data: profile, error: profileError } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', data.user.id)
+          .single();
+
+        if (!profileError && profile) {
+          const adminRoles = ['super_admin', 'finance_admin', 'compliance_officer', 'operations_admin'];
+          if (adminRoles.includes(profile.role)) {
+            await supabase.auth.signOut();
+            Alert.alert('Access Denied', 'The admin dashboard is only accessible via the web application.');
+            return;
+          }
+        }
+
         setToken(data.session.access_token);
         Alert.alert('Success', 'Logged in successfully');
         navigateTo('Dashboard');
