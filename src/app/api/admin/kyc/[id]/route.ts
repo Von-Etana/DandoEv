@@ -3,7 +3,7 @@ import { withRoles, withValidation, type ApiContext } from '@/lib/api-handler';
 import prisma from '@/lib/prisma';
 import logger from '@/lib/logger';
 import { z } from 'zod';
-import { VerificationStatus, KycStatus, DocumentType } from '@prisma/client';
+
 
 const kycUpdateSchema = z.object({
   status: z.enum(['verified', 'rejected']),
