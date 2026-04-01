@@ -18,8 +18,8 @@ Notifications.setNotificationHandler({
  */
 export function usePushNotifications() {
   const [expoPushToken, setExpoPushToken] = useState<string | undefined>(undefined);
-  const notificationListener = useRef<Notifications.Subscription>();
-  const responseListener = useRef<Notifications.Subscription>();
+  const notificationListener = useRef<Notifications.Subscription | null>(null);
+  const responseListener = useRef<Notifications.Subscription | null>(null);
 
   useEffect(() => {
     registerForPushNotificationsAsync().then(token => {

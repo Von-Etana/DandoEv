@@ -112,13 +112,13 @@ export async function processReconciliationJob(job: Job) {
 /**
  * Mocking Paystack Settlement API calls
  */
-async function fetchPaystackSettlements() {
+async function fetchPaystackSettlements(): Promise<any[]> {
   if (!PAYSTACK_SECRET) return [];
   // return await paystack.settlement.list(...)
   return []; 
 }
 
-async function fetchPaystackSettlementTransactions(settlementId: string | number) {
+async function fetchPaystackSettlementTransactions(settlementId: string | number): Promise<any[]> {
   if (!PAYSTACK_SECRET) return [];
   // return await paystack.settlement.transactions(settlementId)
   return [];

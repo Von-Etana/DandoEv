@@ -21,14 +21,15 @@ export interface ApiContext {
   user: JwtPayload;
   requestId: string;
   body?: unknown;
+  params?: any;
 }
 
 type ApiHandler = (req: NextRequest, ctx: ApiContext) => Promise<NextResponse>;
 
 // ---- withAuth: Require valid access token ----
 
-export function withAuth(handler: ApiHandler): (req: NextRequest) => Promise<NextResponse> {
-  return async (req: NextRequest) => {
+export function withAuth(handler: ApiHandler): (req: NextRequest, nextCtx?: any) => Promise<NextResponse> {
+  return async (req: NextRequest, nextCtx?: any) => {
     const requestId = req.headers.get('x-request-id') || crypto.randomUUID();
 
     // Try Authorization header first, then cookie fallback
@@ -45,7 +46,7 @@ export function withAuth(handler: ApiHandler): (req: NextRequest) => Promise<Nex
     try {
       const payload = await verifySupabaseToken(token);
       if (!payload) throw new Error('Invalid token');
-      return handler(req, { user: payload, requestId });
+      return handler(req, { user: payload, requestId, params: nextCtx?.params });
     } catch {
       return NextResponse.json(
         { error: 'Invalid or expired session' },
@@ -60,7 +61,7 @@ export function withAuth(handler: ApiHandler): (req: NextRequest) => Promise<Nex
 export function withRoles(
   roles: string[],
   handler: ApiHandler
-): (req: NextRequest) => Promise<NextResponse> {
+): (req: NextRequest, nextCtx?: any) => Promise<NextResponse> {
   return withAuth(async (req, ctx) => {
     if (!roles.includes(ctx.user.role)) {
       return NextResponse.json(

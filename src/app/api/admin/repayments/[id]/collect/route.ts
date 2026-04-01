@@ -11,7 +11,7 @@ import logger from '@/lib/logger';
 export const POST = withRoles(
   ['super_admin', 'finance_admin'],
   async (req: NextRequest, ctx: ApiContext) => {
-    const { id } = ctx.params;
+    const { id } = await ctx.params;
 
     try {
       const repayment = await prisma.repayment.findUnique({

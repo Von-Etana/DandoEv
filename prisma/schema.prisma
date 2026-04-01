@@ -321,7 +321,7 @@ model Guarantor {
   id              String          @id @default(uuid())
   loanId          String
   applicantUserId String
-  userId          String?         // Link to their own User account if they have one
+  userId          String?         @unique // Link to their own User account if they have one
   fullName        String
   email           String?
   phone           String?

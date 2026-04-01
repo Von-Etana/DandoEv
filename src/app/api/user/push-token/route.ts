@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { withAuth } from '@/lib/api-handler';
+import { withAuth, type ApiContext } from '@/lib/api-handler';
 import prisma from '@/lib/prisma';
 import logger from '@/lib/logger';
 
-async function handler(req: NextRequest, user: { id: string }) {
-  const log = logger.child({ route: 'user/push-token', userId: user.id });
+async function handler(req: NextRequest, ctx: ApiContext) {
+  const log = logger.child({ route: 'user/push-token', userId: ctx.user.sub });
 
   try {
     const { token, platform } = await req.json();
@@ -14,7 +14,7 @@ async function handler(req: NextRequest, user: { id: string }) {
     }
 
     await prisma.user.update({
-      where: { id: user.id },
+      where: { id: ctx.user.sub },
       data: {
         pushToken: token,
         pushPlatform: platform || 'expo',
