@@ -128,8 +128,8 @@ export default function SignUpScreen({ navigateTo, setToken }: { navigateTo: (sc
 
 const styles = StyleSheet.create({
   container: { flexGrow: 1, padding: 24, justifyContent: 'center', backgroundColor: '#F9FAFB' },
-  title: { fontSize: 32, fontWeight: '900', color: '#1A1D5A', marginBottom: 8, letterSpacing: -0.5 },
-  subtitle: { fontSize: 16, color: '#6B7280', marginBottom: 32 },
+  title: { fontSize: 32, fontWeight: '900', fontFamily: 'InterTight_900Black', color: '#1A1D5A', marginBottom: 8, letterSpacing: -0.5 },
+  subtitle: { fontSize: 16, fontFamily: 'InterTight_400Regular', color: '#6B7280', marginBottom: 32 },
   form: { 
     backgroundColor: '#fff', 
     padding: 24, 
@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
   },
   row: { flexDirection: 'row', justifyContent: 'space-between' },
   col: { flex: 0.48 },
-  label: { fontSize: 13, fontWeight: '700', color: '#1F2937', marginBottom: 8, marginTop: 4 },
+  label: { fontSize: 13, fontWeight: '700', fontFamily: 'InterTight_700Bold', color: '#1F2937', marginBottom: 8, marginTop: 4 },
   input: { 
     backgroundColor: '#F9FAFB',
     borderWidth: 1, 
@@ -153,6 +153,7 @@ const styles = StyleSheet.create({
     padding: 14, 
     marginBottom: 16, 
     fontSize: 16,
+    fontFamily: 'InterTight_400Regular',
     color: '#111827'
   },
   termsContainer: {
@@ -180,15 +181,18 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 12,
     fontWeight: '900',
+    fontFamily: 'InterTight_900Black',
   },
   termsText: {
     fontSize: 14,
+    fontFamily: 'InterTight_400Regular',
     color: '#6B7280',
     flex: 1,
   },
   termsLink: {
     color: '#2E3192',
     fontWeight: '700',
+    fontFamily: 'InterTight_700Bold',
   },
   button: { 
     backgroundColor: '#2E3192', 
@@ -202,8 +206,8 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 6,
   },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: '800' },
+  buttonText: { color: '#fff', fontSize: 16, fontWeight: '800', fontFamily: 'InterTight_800ExtraBold' },
   footer: { flexDirection: 'row', justifyContent: 'center', marginTop: 24 },
-  footerText: { color: '#6B7280', fontSize: 14 },
-  link: { color: '#2E3192', fontSize: 14, fontWeight: '700' }
+  footerText: { color: '#6B7280', fontSize: 14, fontFamily: 'InterTight_400Regular' },
+  link: { color: '#2E3192', fontSize: 14, fontWeight: '700', fontFamily: 'InterTight_700Bold' }
 });

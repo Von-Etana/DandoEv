@@ -1,5 +1,12 @@
 import type { Metadata } from "next";
+import { Inter_Tight } from 'next/font/google';
 import "./globals.css";
+
+const interTight = Inter_Tight({
+  subsets: ['latin'],
+  variable: '--font-inter-tight',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: "DandoEv - Ride Electric, Pay Smart | E-Bike BNPL Nigeria",
@@ -15,7 +22,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${interTight.variable}`}>
       <body style={{ paddingBottom: '80px' }}> {/* Padding for mobile nav */}
         {children}
         <MobileNav />

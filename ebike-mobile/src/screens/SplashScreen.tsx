@@ -45,10 +45,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logoContainer: {
-    width: 80,
-    height: 80,
+    width: 120,
+    height: 120,
     backgroundColor: '#FFFFFF',
-    borderRadius: 24,
+    borderRadius: 36,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 24,
@@ -59,11 +59,12 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   logoIcon: {
-    fontSize: 40,
+    fontSize: 60,
   },
   logoText: {
-    fontSize: 42,
+    fontSize: 52,
     fontWeight: '900',
+    fontFamily: 'InterTight_900Black',
     color: '#FFFFFF',
     letterSpacing: -1,
     marginBottom: 8,
@@ -75,6 +76,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#E5E7EB',
     fontWeight: '500',
+    fontFamily: 'InterTight_500Medium',
     letterSpacing: 0.5,
   },
 });

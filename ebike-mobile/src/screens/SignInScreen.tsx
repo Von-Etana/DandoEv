@@ -102,8 +102,8 @@ export default function SignInScreen({ navigateTo, setToken }: { navigateTo: (sc
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 24, justifyContent: 'center', backgroundColor: '#F9FAFB' },
-  title: { fontSize: 32, fontWeight: '900', color: '#1A1D5A', marginBottom: 8, letterSpacing: -0.5 },
-  subtitle: { fontSize: 16, color: '#6B7280', marginBottom: 32 },
+  title: { fontSize: 32, fontWeight: '900', fontFamily: 'InterTight_900Black', color: '#1A1D5A', marginBottom: 8, letterSpacing: -0.5 },
+  subtitle: { fontSize: 16, fontFamily: 'InterTight_400Regular', color: '#6B7280', marginBottom: 32 },
   form: { 
     backgroundColor: '#fff', 
     padding: 24, 
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#F3F4F6',
   },
-  label: { fontSize: 13, fontWeight: '700', color: '#1F2937', marginBottom: 8 },
+  label: { fontSize: 13, fontWeight: '700', fontFamily: 'InterTight_700Bold', color: '#1F2937', marginBottom: 8 },
   input: { 
     backgroundColor: '#F9FAFB',
     borderWidth: 1, 
@@ -125,6 +125,7 @@ const styles = StyleSheet.create({
     padding: 14, 
     marginBottom: 16, 
     fontSize: 16,
+    fontFamily: 'InterTight_400Regular',
     color: '#111827'
   },
   button: { 
@@ -139,10 +140,10 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 6,
   },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: '800' },
+  buttonText: { color: '#fff', fontSize: 16, fontWeight: '800', fontFamily: 'InterTight_800ExtraBold' },
   footer: { flexDirection: 'row', justifyContent: 'center', marginTop: 24, marginBottom: 16 },
-  footerText: { color: '#6B7280', fontSize: 14 },
-  link: { color: '#2E3192', fontSize: 14, fontWeight: '700' },
+  footerText: { color: '#6B7280', fontSize: 14, fontFamily: 'InterTight_400Regular' },
+  link: { color: '#2E3192', fontSize: 14, fontWeight: '700', fontFamily: 'InterTight_700Bold' },
   demoButton: { 
     backgroundColor: 'transparent', 
     borderWidth: 0, 
@@ -150,5 +151,5 @@ const styles = StyleSheet.create({
     elevation: 0, 
     marginTop: 4 
   },
-  demoText: { color: '#6B7280', fontSize: 14, fontWeight: '600', textDecorationLine: 'underline' }
+  demoText: { color: '#6B7280', fontSize: 14, fontWeight: '600', fontFamily: 'InterTight_600SemiBold', textDecorationLine: 'underline' }
 });

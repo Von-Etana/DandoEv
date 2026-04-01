@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, SafeAreaView, StatusBar } from 'react-native';
+import { useFonts, InterTight_400Regular, InterTight_500Medium, InterTight_600SemiBold, InterTight_700Bold, InterTight_800ExtraBold, InterTight_900Black } from '@expo-google-fonts/inter-tight';
 import SignInScreen from './src/screens/SignInScreen';
 import SignUpScreen from './src/screens/SignUpScreen';
 import DashboardScreen from './src/screens/DashboardScreen';
@@ -17,6 +18,15 @@ export default function App() {
   // Initialize Push Notifications
   usePushNotifications();
 
+  let [fontsLoaded] = useFonts({
+    InterTight_400Regular,
+    InterTight_500Medium,
+    InterTight_600SemiBold,
+    InterTight_700Bold,
+    InterTight_800ExtraBold,
+    InterTight_900Black,
+  });
+
   useEffect(() => {
     // Hide splash screen after 2.5 seconds
     const timer = setTimeout(() => {
@@ -28,6 +38,10 @@ export default function App() {
   const navigateTo = (screen: ScreenType) => {
     setCurrentScreen(screen);
   };
+
+  if (!fontsLoaded) {
+    return null;
+  }
 
   if (isSplashVisible) {
     return (

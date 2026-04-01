@@ -84,10 +84,10 @@ export default function DashboardScreen({ navigateTo, token, setToken }: { navig
                 </View>
                 {savingsData?.savedSoFar > 0 ? (
                     <>
-                        <Text style={{fontSize: 28, fontWeight: '800', color: '#10B981', marginBottom: 4}}>
+                        <Text style={{fontSize: 28, fontWeight: '800', fontFamily: 'InterTight_800ExtraBold', color: '#10B981', marginBottom: 4}}>
                             ₦{savingsData.savedSoFar.toLocaleString()}
                         </Text>
-                        <Text style={{fontSize: 12, color: '#6B7280', marginBottom: 12}}>
+                        <Text style={{fontSize: 12, fontFamily: 'InterTight_400Regular', color: '#6B7280', marginBottom: 12}}>
                             Locked until: {savingsData.lockedUntil !== 'No active restriction' 
                                 ? new Date(savingsData.lockedUntil).toLocaleDateString() 
                                 : 'No lock - Available for unlock sweep!'}
@@ -97,8 +97,8 @@ export default function DashboardScreen({ navigateTo, token, setToken }: { navig
                         {savingsData?.dailyStats && (
                             <View style={{ borderTopWidth: 1, borderTopColor: '#E5E7EB', paddingTop: 12 }}>
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                                    <Text style={{ fontSize: 13, fontWeight: '600', color: '#374151' }}>Daily Collection Progress</Text>
-                                    <Text style={{ fontSize: 13, fontWeight: '700', color: '#2E3192' }}>
+                                    <Text style={{ fontSize: 13, fontWeight: '600', fontFamily: 'InterTight_600SemiBold', color: '#374151' }}>Daily Collection Progress</Text>
+                                    <Text style={{ fontSize: 13, fontWeight: '700', fontFamily: 'InterTight_700Bold', color: '#2E3192' }}>
                                         {savingsData.dailyStats.collected}/{savingsData.dailyStats.total} Days
                                     </Text>
                                 </View>
@@ -110,7 +110,7 @@ export default function DashboardScreen({ navigateTo, token, setToken }: { navig
                                     }} />
                                 </View>
                                 {savingsData.dailyStats.missed > 0 && (
-                                    <Text style={{ fontSize: 11, color: '#EF4444', marginTop: 4, fontWeight: '500' }}>
+                                    <Text style={{ fontSize: 11, fontFamily: 'InterTight_500Medium', color: '#EF4444', marginTop: 4, fontWeight: '500' }}>
                                         ⚠️ You have missed {savingsData.dailyStats.missed} days. Fund your wallet to catch up.
                                     </Text>
                                 )}
@@ -159,21 +159,21 @@ export default function DashboardScreen({ navigateTo, token, setToken }: { navig
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F9FAFB' },
   header: { padding: 24, backgroundColor: '#2E3192', borderBottomLeftRadius: 24, borderBottomRightRadius: 24, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  greeting: { color: '#D1D5DB', fontSize: 14, marginBottom: 8 },
-  balanceTitle: { color: '#E5E7EB', fontSize: 12 },
-  balance: { color: '#fff', fontSize: 32, fontWeight: '800' },
+  greeting: { color: '#D1D5DB', fontSize: 14, marginBottom: 8, fontFamily: 'InterTight_400Regular' },
+  balanceTitle: { color: '#E5E7EB', fontSize: 12, fontFamily: 'InterTight_400Regular' },
+  balance: { color: '#fff', fontSize: 32, fontWeight: '800', fontFamily: 'InterTight_800ExtraBold' },
   logoutBtn: { backgroundColor: 'rgba(255,255,255,0.2)', paddingVertical: 6, paddingHorizontal: 12, borderRadius: 16 },
-  logoutText: { color: '#fff', fontSize: 12, fontWeight: '600' },
+  logoutText: { color: '#fff', fontSize: 12, fontWeight: '600', fontFamily: 'InterTight_600SemiBold' },
   card: { backgroundColor: '#fff', margin: 24, padding: 20, borderRadius: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, elevation: 3 },
-  cardTitle: { fontSize: 18, fontWeight: '700', marginBottom: 8, color: '#1A1D5A' },
-  subtext: { color: '#6B7280', fontSize: 14, marginBottom: 16 },
+  cardTitle: { fontSize: 18, fontWeight: '700', fontFamily: 'InterTight_700Bold', marginBottom: 8, color: '#1A1D5A' },
+  subtext: { color: '#6B7280', fontSize: 14, fontFamily: 'InterTight_400Regular', marginBottom: 16 },
   actionBtn: { backgroundColor: '#F3F4F6', padding: 12, borderRadius: 8, alignItems: 'center' },
-  actionBtnText: { color: '#2E3192', fontWeight: '700' },
-  sectionTitle: { fontSize: 18, fontWeight: '700', marginHorizontal: 24, marginBottom: 12, color: '#374151' },
+  actionBtnText: { color: '#2E3192', fontWeight: '700', fontFamily: 'InterTight_700Bold' },
+  sectionTitle: { fontSize: 18, fontWeight: '700', fontFamily: 'InterTight_700Bold', marginHorizontal: 24, marginBottom: 12, color: '#374151' },
   bikeCard: { marginHorizontal: 24, backgroundColor: '#fff', borderRadius: 16, overflow: 'hidden', flexDirection: 'row', marginBottom: 16 },
   bikeImagePlaceholder: { width: 100, height: 100, backgroundColor: '#F3F4F6', alignItems: 'center', justifyContent: 'center' },
   bikeInfo: { padding: 16, flex: 1 },
-  bikeName: { fontSize: 16, fontWeight: '700', color: '#111827', marginBottom: 4 },
-  bikePrice: { fontSize: 14, color: '#4B5563', fontWeight: '500' },
-  bikeMonthly: { fontSize: 12, color: '#10B981', fontWeight: '700', marginTop: 4 }
+  bikeName: { fontSize: 16, fontWeight: '700', fontFamily: 'InterTight_700Bold', color: '#111827', marginBottom: 4 },
+  bikePrice: { fontSize: 14, color: '#4B5563', fontWeight: '500', fontFamily: 'InterTight_500Medium' },
+  bikeMonthly: { fontSize: 12, color: '#10B981', fontWeight: '700', fontFamily: 'InterTight_700Bold', marginTop: 4 }
 });
